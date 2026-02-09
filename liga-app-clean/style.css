@@ -1,0 +1,256 @@
+/* ==========================================================================
+   style.css – Black & Gold Theme for liga-app (s barvou #fcb600)
+   ========================================================================== */
+
+/* —————————————————————————————————————————————————————————————
+   1. CSS PROMĚNNÉ
+   ————————————————————————————————————————————————————————————— */
+:root {
+  /* základní barvy */
+  --bg-dark:      #212529;
+  --text-light:   #ecf0f1;
+  --gold:         #e5c302;  /* nové zlaté */
+  --gold-dark:    #e0a500;  /* tmavší varianta pro hover */
+  --bg-page:      #f5f7fa;
+  --text-dark:    #333;
+  --table-bg:     #ffffff;
+  --table-hover:  rgba(252,182,0,0.1); /* lehký zlatý nádech */
+  --shadow:       rgba(0,0,0,0.1);
+}
+
+/* —————————————————————————————————————————————————————————————
+   2. RESET A GLOBÁLNÍ STYLY
+   ————————————————————————————————————————————————————————————— */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-page);
+  color: var(--text-dark);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h2 {
+  margin: 0 0 .8em;
+  font-size: 2.3rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text-dark);
+}
+
+/* horizontální čára */
+.hr-black {
+  border: 0;
+  border-top: 3px solid var(--bg-dark);
+  margin-top: 10px;
+}
+
+/* —————————————————————————————————————————————————————————————
+   3. NAVBAR
+   ————————————————————————————————————————————————————————————— */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: var(--bg-dark);
+  box-shadow: 0 2px 4px var(--shadow);
+  display: flex;
+  align-items: center;
+  z-index: 1020;
+}
+
+.navbar .navbar-brand {
+  display: flex;
+  align-items: center;
+  color: var(--gold);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.header-actions .nav-link,
+.header-actions .btn {
+  color: var(--gold);
+}
+
+.header-actions .btn-primary {
+  background: var(--gold);
+  color: var(--bg-dark);
+  border: none;
+}
+
+.header-actions .btn-primary:hover {
+  background: var(--gold-dark);
+}
+
+.header-actions .nav-link:hover {
+  color: var(--gold-dark);
+}
+
+
+/* —————————————————————————————————————————————————————————————
+   4. SIDEBAR
+   ————————————————————————————————————————————————————————————— */
+#sidebar-wrapper {
+  position: fixed;
+  top: 56px; left: 0; bottom: 0;
+  width: 250px;
+  background: var(--bg-dark);
+  padding-top: 1.5rem;
+  overflow-y: auto;
+}
+
+#sidebar-wrapper .nav-link {
+  display: flex;
+  align-items: center;
+  color: var(--text-light);
+  padding: .5rem 1rem;
+  transition: background .2s, padding-left .2s;
+}
+
+#sidebar-wrapper .nav-link:hover {
+  background: var(--gold);
+  color: var(--bg-dark);
+  padding-left: 1.5rem;
+}
+
+#sidebar-wrapper .nav-link.active {
+  background: var(--gold);
+  color: var(--bg-dark);
+}
+
+/* —————————————————————————————————————————————————————————————
+   5. OFFCANVAS (MOBIL)
+   ————————————————————————————————————————————————————————————— */
+.offcanvas-body {
+  background: var(--bg-dark);
+  padding-top: 1rem;
+}
+
+.offcanvas-body .nav-link {
+  color: var(--text-light);
+  padding: .5rem 1rem;
+  transition: background .2s, padding-left .2s;
+}
+
+.offcanvas-body .nav-link:hover,
+.offcanvas-body .nav-link.active {
+  background: var(--gold);
+  color: var(--bg-dark);
+  padding-left: 1.5rem;
+}
+
+/* —————————————————————————————————————————————————————————————
+   6. HLAVNÍ OBSAH
+   ————————————————————————————————————————————————————————————— */
+#wrapper {
+  display: flex;
+  flex: 1;
+  margin-top: 56px;
+}
+
+#content {
+  flex: 1;
+  margin: 10px auto 42px 265px;
+  max-width: 1100px;
+  background: var(--table-bg);
+  border-radius: 2rem;
+  box-shadow: 0 0 32px var(--shadow);
+  padding: 1rem 2rem;
+}
+
+@media (max-width: 767.98px) {
+  #sidebar-wrapper {
+    display: none;
+  }
+  #content {
+    margin: 0;
+    width: 100%;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: .5rem;
+  }
+}
+
+/* —————————————————————————————————————————————————————————————
+   7. TABELÁRNÍ STYLY
+   ————————————————————————————————————————————————————————————— */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--table-bg);
+}
+
+.table th,
+.table td {
+  padding: .75rem 1rem;
+  text-align: center;
+}
+
+.table th {
+  background: var(--bg-dark);
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.table tr:nth-child(even) {
+  background: #f3f7fa;
+}
+
+.table tr:hover {
+  background: var(--table-hover);
+}
+
+/* —————————————————————————————————————————————————————————————
+   8. PATIČKA
+   ————————————————————————————————————————————————————————————— */
+.main-footer {
+  background: var(--table-bg);
+  color: var(--text-dark);
+  text-align: center;
+  padding: 1rem 0;
+  border-top: 0px solid var(--bg-dark);
+}
+
+.main-footer a {
+  color: var(--gold);
+}
+@media (max-width: 767.98px) {
+  .main-footer {
+    background: #f5f7fa;
+  }
+   }
+.main-footer a:hover {
+  color: var(--gold-dark);
+}
+
+/* —————————————————————————————————————————————————————————————
+   9. OSTATNÍ DOPLŇKY
+   ————————————————————————————————————————————————————————————— */
+/* interní odkazy */
+a {
+  color: var(--gold);
+}
+
+a:hover {
+  color: var(--gold-dark);
+}
+
+/* skrytí scrollbar track na mobilu */
+@media (max-width: 767.98px) {
+  #sidebar-wrapper::-webkit-scrollbar { display: none; }
+}
+
+/* —————————————————————————————————————————————————————————————
+   KONEC style.css
+   ————————————————————————————————————————————————————————————— */

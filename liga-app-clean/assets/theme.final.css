@@ -1,0 +1,682 @@
+/* =========================================================
+   Šipky Třešť — BLACK–YELLOW THEME (DRY + FIXED MENUS)
+   v2025-09-03
+   Sekce:
+   - Variables & reset
+   - Header (topbar, burger)
+   - Layout (wrapper, content, footer)
+   - Sidebar (+ overlay)
+   - Typography
+   - Tables (base + typed: league/rozpis/stats)
+   - Panels & sponsors
+   - Sidebar league logos
+   - Mobile menus (.nk-topmenu, .nk-mobilemenu)
+   - Responsive (≤960 / ≤540) + iOS fix
+   ========================================================= */
+
+/* ============= Variables ============= */
+:root{
+  --bg:#f6f7fb;
+  --text:#111827;
+  --muted:#4b5563;
+  --panel:#ffffff;
+  --line:#e5e7eb;
+  --shadow:0 1px 6px rgba(0,0,0,.07);
+
+  --black:#0b0b0f;
+  --yellow:#f2c200;
+  --link:#0e7aff;
+
+  --panel-bg:#fff;
+  --panel-brd:#e5e7eb;
+  --panel-brd-strong:#d1d5db;
+  --panel-shadow:0 6px 18px rgba(0,0,0,.06);
+  --accent:#facc15;
+  --accent-dk:#d4af0f;
+  --ink:#111827;
+}
+
+/* ============= Reset & base ============= */
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  min-height:100dvh;margin:0;display:flex;flex-direction:column;
+  background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+}
+a{color:var(--link)} a:hover{text-decoration:none}
+
+/* ============= Header ============= */
+.nk-header{
+  position:sticky;top:0;z-index:50;
+  background:var(--black);color:#fff;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.nk-container{
+  width:min(1200px,100% - 2rem);
+  margin:0 auto;display:flex;align-items:center;gap:16px;padding:10px 0;
+}
+.nk-brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff}
+.nk-logo{width:36px;height:36px;border-radius:50%;box-shadow:0 1px 2px rgba(0,0,0,.25);background:#fff;object-fit:contain}
+.nk-title{font-weight:800;letter-spacing:.2px}
+.nk-nav{margin-left:auto;display:flex;align-items:center;gap:14px}
+.nk-link{color:#fff;text-decoration:none;padding:6px 8px;border-radius:8px}
+.nk-link:hover{background:rgba(255,255,255,.1)}
+
+.nk-season{display:flex;align-items:center;gap:8px;margin-left:8px;position:relative}
+.nk-season__label{color:#fff;font-size:14px;opacity:.85}
+.nk-season select{
+  appearance:none;background:#fff;color:#111;border:1px solid #d1d5db;border-radius:8px;
+  padding:6px 28px 6px 10px;cursor:pointer
+}
+.nk-season::after{
+  content:'';position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  border:6px solid transparent;border-top-color:#111;
+}
+
+/* Burger */
+.nk-burger{display:none;position:relative;width:40px;height:34px;background:none;border:0;cursor:pointer}
+.nk-burger span{position:absolute;left:8px;right:8px;height:2px;background:#fff;transition:.2s}
+.nk-burger span:nth-child(1){top:9px}
+.nk-burger span:nth-child(2){top:16px}
+.nk-burger span:nth-child(3){top:23px}
+
+/* ============= Layout ============= */
+.nk-wrapper{
+  width:min(1200px,100% - 2rem);
+  margin:16px auto 0;
+  display:grid;grid-template-columns:220px 1fr;gap:14px;
+}
+.nk-content{
+  background:#fff;border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);padding:16px 16px;
+  flex:1 0 auto;min-width:0;align-self:start;
+}
+.nk-footer{
+  margin-top:auto;flex-shrink:0;width:100%;
+  text-align:center;color:#6b7280;padding:12px 0 18px;background:transparent;font-size:14px
+}
+.nk-content > :last-child{margin-bottom:0}
+
+/* ============= Sidebar + overlay ============= */
+.nk-sidebar{
+  align-self:start;background:var(--panel);border-radius:12px;padding:10px;
+  box-shadow:var(--shadow);border:1px solid var(--line);
+}
+.nk-sidebar ul{list-style:none;margin:0;padding:0}
+.nk-sidebar li{margin:2px 0}
+.nk-sidebar a{display:block;padding:8px 10px;border-radius:10px;text-decoration:none;color:#0d47a1}
+.nk-sidebar a:hover{background:#eef4ff}
+.nk-sidebar b,.nk-sidebar strong{display:block;margin:8px 4px 4px;color:#111}
+
+.active,.nk-sidebar a[aria-current="page"]{
+  background:linear-gradient(90deg, rgba(242,194,0,.18), rgba(242,194,0,.06));
+  border-left:3px solid var(--yellow);
+}
+
+/* Overlay (společný pro panely) */
+.nk-dim{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(2px);
+  opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s ease;z-index:55;
+}
+
+/* ============= Typography ============= */
+h1,h2,h3{color:#0b0b0f}
+h1{font-size:clamp(28px,3.4vw,36px);margin:0 0 12px}
+h2{font-size:clamp(22px,2.6vw,28px);margin:0 0 10px}
+h3{font-size:clamp(18px,2.2vw,22px);margin:16px 0 8px}
+.mt-2{margin-top:.5rem}.mt-3{margin-top:1rem}
+
+/* ============= Tables — base ============= */
+.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:8px 0}
+.table-wrap>table{width:100%;table-layout:auto;border-collapse:collapse}
+
+.table{border:0 solid var(--line);border-radius:10px;overflow:hidden}
+.table thead th{
+  background:var(--black);color:var(--yellow);text-align:left;padding:.7rem .9rem;font-weight:800;
+  border-bottom:1px solid rgba(255,255,255,.06)
+}
+.table tbody td{padding:.65rem .9rem;border-bottom:1px solid #e9edf3}
+.table tbody tr:last-child td{border-bottom:0}
+.table th + th,.table td + td{border-left:1px solid #eef2f7}
+
+.table th:nth-child(2),.table td:nth-child(2){width:40%}
+.table th:nth-child(n+3),.table td:nth-child(n+3){text-align:center}
+
+/* Hover: u statistik/rozpisu nechceme ztmavení */
+.nk-content .table.table--rozpis tbody tr:hover,
+.nk-content .table.table--stats  tbody tr:hover{filter:none}
+
+/* ============= Tables — typed ============= */
+/* Liga – jediné barevné zvýraznění */
+.table--league tbody tr:nth-child(1){background:#dffbe9}
+.table--league tbody tr:nth-child(2){background:#eefcd6}
+.table--league tbody tr:nth-child(3){background:#fff4c6}
+.table--league tbody tr:nth-last-child(-n+3){background:#ffe2e5}
+
+/* Rozpis */
+.table--rozpis th:nth-child(1),.table--rozpis td:nth-child(1){text-align:left;width:40%}
+.table--rozpis th:nth-child(2),.table--rozpis td:nth-child(2){text-align:center;width:12rem}
+.table--rozpis th:nth-child(3),.table--rozpis td:nth-child(3){text-align:right;width:40%}
+.table--rozpis th:nth-child(4),.table--rozpis td:nth-child(4){text-align:center;width:8rem}
+
+/* Statistiky */
+.table--stats th:nth-child(2),.table--stats td:nth-child(2){text-align:left;width:40%}
+.table--stats th:not(:nth-child(2)),.table--stats td:not(:nth-child(2)){text-align:center}
+
+
+/* Sort šipky */
+.table--sortable thead th[data-sortable]{
+  position:relative;cursor:pointer;user-select:none;padding-right:1.6rem;
+}
+.table--sortable thead th[data-sortable]::after{
+  content:"⇅";position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  font-size:.85em;opacity:.4;
+}
+.table--sortable thead th[data-sortable]:hover::after{opacity:.7}
+.table--sortable thead th[aria-sort="ascending"]::after{content:"▲";opacity:.9}
+.table--sortable thead th[aria-sort="descending"]::after{content:"▼";opacity:.9}
+
+/* ============= Panels & sponsors ============= */
+.panel{
+  background:var(--panel-bg);border:1px solid var(--panel-brd);border-radius:16px;
+  box-shadow:var(--panel-shadow);padding:1rem 1.25rem;margin:1rem 0 1.25rem;position:relative;
+}
+.panel-stats{border-left:6px solid var(--accent);padding-left:1rem}
+.panel h2{margin:.25rem 0 .5rem;font-size:1.35rem;line-height:1.25}
+.panel p{margin:.25rem 0 1rem}
+
+.league-progress{display:grid;gap:.6rem;margin:.25rem 0 .75rem}
+.league-row{padding:.45rem .6rem;border:1px solid var(--panel-brd);border-radius:12px;background:#fafafa}
+.league-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:.35rem}
+.league-title{font-weight:700;letter-spacing:.02em}
+.badge{
+  display:inline-block;min-width:64px;text-align:center;font-variant-numeric:tabular-nums;
+  padding:.2rem .5rem;border:1px solid var(--panel-brd-strong);border-radius:999px;background:#fff;color:#1f2937
+}
+.progress{height:8px;background:#eee;border-radius:999px;overflow:hidden}
+.progress .fill{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-dk))}
+.tops{display:grid;gap:.35rem;border-top:1px dashed var(--panel-brd);padding-top:.75rem}
+.tops strong{font-weight:800}
+
+.panel-info h3{margin:.2rem 0 .6rem;font-size:1.1rem}
+.panel-info .bullets{margin:0 0 .6rem 1.1rem}
+.panel-info .bullets li{margin:.25rem 0}
+.panel-info .note{color:var(--muted);margin:.5rem 0 0}
+
+/* Sponsors */
+.panel-sponsors h3{margin:.2rem 0 .8rem}
+.sponsor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem}
+.sponsor-card{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;
+  border:1px solid var(--panel-brd);border-radius:14px;background:#fff;padding:.75rem;
+  text-decoration:none;color:var(--ink);
+  transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;
+}
+.sponsor-card:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.logo-wrap{width:100%;height:68px;display:flex;align-items:center;justify-content:center}
+.logo-wrap img{max-width:100%;max-height:68px;object-fit:contain;image-rendering:auto}
+.sponsor-name{font-size:.95rem;font-weight:700;text-align:center;line-height:1.2}
+
+/* ============= Sidebar league logos ============= */
+#sidebar{--league-logo-size:80px;--league-logo-radius:0}
+#sidebar .sidebar-league{display:flex;align-items:center;gap:.6rem}
+#sidebar .league-logo{
+  width:var(--league-logo-size);height:var(--league-logo-size);
+  object-fit:contain;border-radius:var(--league-logo-radius);padding:1px;background:transparent;border:0;box-shadow:none
+}
+#sidebar .league-name{line-height:1.1}
+
+/* ============= MOBILE MENUS (hidden by default) ============= */
+/* Top menu (pravé offcanvas s odkazy z hlavičky) */
+.nk-topmenu,
+.nk-mobilemenu{ display:none; }   /* desktop: nikdy neukazovat */
+
+@media (max-width:960px){
+  /* zobrazíme jen na mobilu */
+  .nk-topmenu,
+  .nk-mobilemenu{ display:block; }
+
+  .nk-topmenu,
+  .nk-mobilemenu{
+    position:fixed;inset:0 0 0 auto;  /* panel zprava */
+    width:min(84vw,340px);
+    background:var(--panel);
+    border-left:1px solid var(--line);
+    box-shadow:var(--shadow);
+    transform:translateX(104%);
+    transition:transform .25s ease;
+    z-index:60;
+    max-height:100dvh;overflow:auto;
+    padding:10px 12px;
+  }
+  /* stav otevřeno */
+  body.nk-open-top  .nk-topmenu{   transform:translateX(0); }
+  body.nk-open-menu .nk-mobilemenu{transform:translateX(0); }
+
+  /* společné linky uvnitř panelu */
+  .nk-toplink{
+    display:block;padding:10px 8px;border-radius:10px;text-decoration:none;color:#0d47a1;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .nk-toplink:hover{background:#eef4ff}
+  .nk-topmenu__hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+  .nk-mm-inner{display:flex;flex-direction:column;gap:8px}
+  .nk-mm-title{font-weight:700;color:#111;margin:6px 2px 4px}
+  .nk-mm-sub{display:grid;gap:4px;margin-left:6px}
+  .nk-mm-sub .nk-toplink{padding-left:12px}
+  .nk-season--mobile select{width:100%}
+
+  /* Dim zapnout jen při otevření */
+  body.nk-open-top .nk-dim,
+  body.nk-open-menu .nk-dim{opacity:1;visibility:visible}
+
+  /* Na mobilu skryj levý sidebar (máme offcanvas panely) */
+  .nk-sidebar{display:none}
+}
+
+/* FIX: mobilní menu – schovat odrážky a zobrazit přepínač ročníku */
+@media (max-width: 960px){
+  /* žádné tečky v seznamu lig/odkazů */
+  .nk-mobilemenu .nk-mm-copy ul{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .nk-mobilemenu .nk-mm-copy li{ margin: 2px 0; }
+  .nk-mobilemenu .nk-mm-copy ul ul{ padding-left: 8px; } /* malé odsazení pododkazů */
+
+  /* přepínač ročníků uvnitř mobilního panelu */
+  .nk-mobilemenu .nk-season--mobile{
+    display: flex !important;          /* klíčové: ať je vidět */
+    flex-direction: column;
+    gap: 6px;
+    padding: 6px 0;
+  }
+  .nk-mobilemenu .nk-season--mobile .nk-season__label{
+    color:#111; opacity:.85; font-size:14px;
+  }
+  .nk-mobilemenu .nk-season--mobile select{
+    width:100%;
+    appearance:none;
+    background:#fff; color:#111;
+    border:1px solid #d1d5db; border-radius:8px;
+    padding:8px 10px;
+  }
+}
+
+
+/* ============= Responsive (layout) ============= */
+@media (max-width:960px){
+  .nk-nav .nk-link{display:none}
+  .nk-season{display:none}
+  .nk-burger{display:inline-block}
+
+  .nk-wrapper{grid-template-columns:1fr}
+  .nk-container,.nk-wrapper{width:100% !important;margin-left:0;margin-right:0}
+  .nk-content{border-radius:12px;padding:16px 10px}
+  .table-wrap{margin-left:0;margin-right:0}
+}
+
+/* ≤540 px: kompaktní tabulky */
+@media (max-width:540px){
+  /* Liga — bez horizontálního scrollu */
+  .table-wrap{overflow-x:hidden}
+  .table--league{table-layout:fixed;width:100%}
+  .table--league th,.table--league td{padding:.35rem .35rem;font-size:13px;line-height:1.15}
+  .table--league thead th{font-size:12.5px}
+  .table--league th + th,.table--league td + td{border-left:1px solid #eceff3}
+  .table--league th:nth-child(1),.table--league td:nth-child(1){width:3.6ch;text-align:center}
+  .table--league th:nth-child(3),.table--league td:nth-child(3),
+  .table--league th:nth-child(4),.table--league td:nth-child(4),
+  .table--league th:nth-child(5),.table--league td:nth-child(5),
+  .table--league th:nth-child(6),.table--league td:nth-child(6),
+  .table--league th:nth-child(7),.table--league td:nth-child(7){
+    width:3.8ch;text-align:center;font-variant-numeric:tabular-nums
+  }
+  .table--league th:nth-child(2),.table--league td:nth-child(2){
+    width:auto !important;white-space:normal;word-break:break-word;overflow-wrap:normal
+  }
+  .table--league td:nth-child(2){font-size:11px;line-height:1.2;max-height:2.4em;overflow:hidden}
+
+  /* Rozpis + Statistiky — fixed layout, kompaktní */
+  .table--rozpis,.table--stats{table-layout:fixed;width:100%}
+  .table--rozpis th,.table--rozpis td,
+  .table--stats  th,.table--stats  td{padding:.35rem .35rem;font-size:13px;line-height:1.15}
+  .table--rozpis th + th,.table--rozpis td + td,
+  .table--stats  th + th,.table--stats  td + td{border-left:1px solid #eceff3}
+
+  /* Rozpis */
+  .table--rozpis th:nth-child(1),.table--rozpis td:nth-child(1),
+  .table--rozpis th:nth-child(3),.table--rozpis td:nth-child(3){
+    width:auto !important;white-space:normal;word-break:break-word;overflow-wrap:normal;text-align:left !important
+  }
+  .table--rozpis td:nth-child(1),.table--rozpis td:nth-child(3){
+    font-size:12.5px;line-height:1.2;max-height:2.4em;overflow:hidden
+  }
+  .table--rozpis th:nth-child(2),.table--rozpis td:nth-child(2){
+    width:6ch;text-align:center;white-space:nowrap;font-variant-numeric:tabular-nums
+  }
+  .table--rozpis th:nth-child(4),.table--rozpis td:nth-child(4){
+    width:7ch;text-align:center;white-space:nowrap
+  }
+  .table--rozpis td:nth-child(4) a{display:inline-block;max-width:7ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* Statistiky — šířky */
+  .table--stats th:nth-child(1),.table--stats td:nth-child(1){width:3ch;text-align:center}
+  .table--stats th:nth-child(2),.table--stats td:nth-child(2){
+    width:auto !important;text-align:left;white-space:normal;word-break:break-word;overflow-wrap:normal
+  }
+  .table--stats td:nth-child(2){font-size:11px;line-height:1.2;max-height:2.4em;overflow:hidden}
+
+  .table--stats th:nth-child(3),.table--stats td:nth-child(3){
+    width:2.8ch;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap
+  }
+  .table--stats th:nth-child(4),.table--stats td:nth-child(4){
+    width:7ch;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap
+  }
+  .table--stats th:nth-child(5),.table--stats td:nth-child(5){
+    width:4ch;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap
+  }
+  .table--stats th:nth-child(6),.table--stats td:nth-child(6){
+    width:4ch;text-align:center;font-variant-numeric:tabular-nums;white-space:nowrap
+  }
+
+/* Statistiky — krátké hlavičky (FIX) */
+.table--stats thead th:nth-child(1),
+.table--stats thead th:nth-child(3),
+.table--stats thead th:nth-child(4),
+.table--stats thead th:nth-child(5),
+.table--stats thead th:nth-child(6){
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0;                 /* schová dlouhé texty v hlavičce */
+}
+
+/* krátké popisky do hlavičky */
+.table--stats thead th:nth-child(1)::before{ content:"#";  font-size:11px; }
+.table--stats thead th:nth-child(3)::before{ content:"Z";  font-size:11px; }
+.table--stats thead th:nth-child(4)::before{ content:"Ø";  font-size:11px; }
+.table--stats thead th:nth-child(5)::before{ content:"Max";font-size:8px;  }
+.table--stats thead th:nth-child(6)::before{ content:"HB"; font-size:11px; }
+
+
+
+  /* průměr na střed */
+  .table--stats tbody td:nth-child(4){text-align:center;text-indent:-0.45ch}
+    .table--sortable tbody td:nth-child(5){text-align:center;text-indent:-0.95ch}
+}
+
+/* iOS (Safari/WebView) — minimální šířky numerických sloupců */
+@supports (-webkit-overflow-scrolling:touch){
+  @media (max-width:430px){
+    .table--stats th:nth-child(1),.table--stats td:nth-child(1){min-width:3ch}
+    .table--stats th:nth-child(3),.table--stats td:nth-child(3){min-width:3ch}
+    .table--stats th:nth-child(4),.table--stats td:nth-child(4){min-width:7ch}
+    .table--stats th:nth-child(5),.table--stats td:nth-child(5){min-width:4ch}
+    .table--stats th:nth-child(6),.table--stats td:nth-child(6){min-width:4ch}
+  }
+}
+/* ========== MOBILE MENU – fix šipky + hezčí liga bloky ========== */
+@media (max-width: 960px){
+  /* 1) Schovej „desktopovou“ šipku přidanou přes .nk-season::after */
+  .nk-mobilemenu .nk-season::after{ display:none !important; }
+
+  /* 2) Select – vlastní šipka a hezký vzhled (přebije desktop pravidla) */
+  .nk-mobilemenu .nk-season--mobile select{
+    -webkit-appearance:none; -moz-appearance:none; appearance:none;
+    width:100%;
+    background:#fff
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23111827' d='M6 8 0 0h12z'/%3E%3C/svg%3E")
+      no-repeat right 12px center / 12px 8px;
+    border:1px solid #d1d5db; border-radius:12px;
+    padding:10px 36px 10px 12px; font-size:16px; line-height:1.2;
+  }
+  .nk-mobilemenu .nk-season--mobile select:focus{
+    outline:none; border-color:#94a3b8; box-shadow:0 0 0 3px rgba(148,163,184,.25);
+  }
+
+  /* 3) Sidebar markup uvnitř mobilního menu – bez odrážek a s rozestupy */
+  .nk-mobilemenu .nk-mm-copy ul{ list-style:none; margin:0; padding:0; }
+  .nk-mobilemenu .nk-mm-copy li{ margin:0; }
+
+  /* 4) Hlavička každé ligy (používáš .sidebar-league + .league-logo) */
+  .nk-mobilemenu .sidebar-league{
+    display:flex; align-items:center; gap:10px; margin:14px 0 8px;
+    border-top:1px solid var(--line); padding-top:12px;
+  }
+  .nk-mobilemenu .nk-mm-copy .sidebar-league:first-child{
+    border-top:none; padding-top:0; margin-top:0;
+  }
+  .nk-mobilemenu .sidebar-league .league-logo{
+    width:36px; height:36px; border-radius:8px; padding:0; background:transparent;
+  }
+  .nk-mobilemenu .league-name{ font-weight:800; letter-spacing:.02em; color:#111; }
+
+  /* 5) Odkazy „Tabulka / Rozpis / Statistiky“ jako pilulky */
+  .nk-mobilemenu .nk-mm-copy .nav{ margin-left:46px; }           /* zarovnání pod logo */
+  .nk-mobilemenu .nk-mm-copy .nav .nav-item{ display:inline; }   /* inline skupiny */
+  .nk-mobilemenu .nk-mm-copy .nav .nav-link{
+    display:inline-block; margin:0 8px 8px 0;
+    padding:8px 10px; border-radius:999px; text-decoration:none;
+    background:#fff; color:#0d47a1; border:1px solid var(--panel-brd);
+  }
+  .nk-mobilemenu .nk-mm-copy .nav .nav-link.active{
+    background:rgba(242,194,0,.18); border-color:#f2c200;
+  }
+
+  /* 6) Jemná dělící čára mezi horní částí menu a seznamem lig */
+  .nk-mobilemenu .nk-divider{ border:0; border-top:1px solid var(--line); margin:12px 0; }
+}
+/* === MOBILE: Kompletni statistiky (.table--sortable) – šířky sloupců === */
+@media (max-width: 540px){
+  /* jistota: fixed layout + plná šířka */
+  .table-wrap > .table--sortable{
+    table-layout: fixed !important;
+    width: 100%;
+  }
+
+  /* # */
+  .table--sortable th:nth-child(1),
+  .table--sortable td:nth-child(1){
+    width: 1ch !important;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* Jméno – vezme zbytek šířky, neláme po písmenkách */
+  .table--sortable th:nth-child(2),
+  .table--sortable td:nth-child(2){
+    width: 11ch !important;
+    text-align: left;
+    white-space: normal;
+    word-break: break-word;   /* lámat jen dlouhá slova */
+    overflow-wrap: normal;
+  }
+  .table--sortable td:nth-child(2){
+    font-size: 11px;
+    line-height: 1.2;
+    max-height: 2.4em;        /* ~2 řádky */
+    overflow: hidden;
+  }
+
+  /* L – vždy 1 cifra → velmi úzké */
+  .table--sortable th:nth-child(3),
+  .table--sortable td:nth-child(3){
+    width: 2.2ch !important;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  /* Z – 1–2 cifry */
+  .table--sortable th:nth-child(4),
+  .table--sortable td:nth-child(4){
+    width: 3.4ch !important;
+    text-align: center;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Ø – přidáme místo (vejde se i 100,00) */
+  .table--sortable th:nth-child(5),
+  .table--sortable td:nth-child(5){
+    width: 8.8ch !important;
+    text-align: center;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Max – do 3 cifer */
+  .table--sortable th:nth-child(6),
+  .table--sortable td:nth-child(6){
+    width: 4.4ch !important;
+    text-align: center;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* HB – 2–3 cifry */
+  .table--sortable th:nth-child(7),
+  .table--sortable td:nth-child(7){
+    width: 5ch !important;
+    text-align: center;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Krátké hlavičky jen pro 3–7 (Jméno necháme beze změny) */
+  .table--sortable thead th:nth-child(3),
+  .table--sortable thead th:nth-child(4),
+  .table--sortable thead th:nth-child(5),
+  .table--sortable thead th:nth-child(6),
+  .table--sortable thead th:nth-child(7){
+    font-size: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .table--sortable thead th:nth-child(3)::before{ content: "L";   font-size: 9px; }
+  .table--sortable thead th:nth-child(4)::before{ content: "Z";   font-size: 9px; }
+  .table--sortable thead th:nth-child(5)::before{ content: "Ø";   font-size: 9px; }
+  .table--sortable thead th:nth-child(6)::before{ content: "Max"; font-size: 8px; }
+  .table--sortable thead th:nth-child(7)::before{ content: "HB";  font-size: 8px; }
+}
+
+/* iOS pojistka (min-width), kdyby Safari ch nepřesně počítal */
+@supports (-webkit-overflow-scrolling: touch){
+  @media (max-width: 430px){
+    .table--sortable th:nth-child(3), .table--sortable td:nth-child(3){ min-width: 2.2ch; }
+    .table--sortable th:nth-child(5), .table--sortable td:nth-child(5){ min-width: 8.8ch; }
+  }
+}
+/* iPhone fix: u ne-ligových tabulek povol horizontální scroll */
+@media (max-width: 540px){
+  .table-wrap{ overflow-x: auto !important; }   /* přebije dřívější hidden */
+
+  /* pro jistotu: v kompletních statistikách nezkoušej nahrazovat název 1. sloupce (#) */
+  .table--sortable thead th:nth-child(1)::before{ content: none !important; }
+  .table--sortable thead th:nth-child(1){ font-size: inherit !important; }
+}
+/* iPhone Safari fix – Kompletni statistiky: neschovávej sloupce 3–7 */
+@supports (-webkit-overflow-scrolling: touch){
+  @media (max-width: 540px){
+    /* povol vodorovný posuv */
+    .table-wrap{ overflow-x: auto !important; }
+
+    /* u kompletních statistik nepoužívej fixed layout na iOS */
+    .table-wrap > .table--sortable{
+      table-layout: auto !important;
+      min-width: 560px;                 /* vynutí zobrazení všech sloupců -> posuvník */
+    }
+
+    /* bez zalamování čísel; jméno může na 2 řádky */
+    .table--sortable th,
+    .table--sortable td{ white-space: nowrap; }
+    .table--sortable td:nth-child(2){
+      white-space: normal;
+      line-height: 1.2;
+    }
+  }
+}
+/* iPhone/iOS: povolit vodorovný posuv a dát tabulce minimální šířku */
+@supports (-webkit-overflow-scrolling: touch){
+  @media (max-width: 540px){
+    /* wrapper musí scrollovat */
+    .table-wrap{
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+    /* detail zápasu – tvá tabulka má class="table match-table" */
+    .table-wrap > .match-table{
+      min-width: 520px;                 /* uprav klidně 500–560px podle chuti */
+    }
+    /* čísla nezalamovat, popisky klidně na více řádků */
+    .table-wrap > .match-table td{ white-space: nowrap; }
+    .table-wrap > .match-table td:nth-child(1){ white-space: normal; }
+  }
+}
+
+/* Pokud chceš scroll i mimo iOS (Android apod.), přidej i tohle: */
+@media (max-width: 540px){
+  .table-wrap{ overflow-x: auto; }
+  .table-wrap > .match-table{ min-width: 520px; }
+}
+/* MOBILE: menší pilulky v mobilním menu, aby se vešly na jeden řádek */
+@media (max-width: 960px){
+  /* menší odsazení pod logem ligy → víc místa */
+  .nk-mobilemenu .nk-mm-copy .nav{ 
+    margin-left: 36px;                 /* bylo ~46px */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 6px;                      /* rozestupy mezi pilulkami */
+  }
+  .nk-mobilemenu .nk-mm-copy .nav .nav-link{
+    padding: 6px 10px;                 /* bylo 8px 10px */
+    font-size: 14px;                   /* menší písmo */
+    border-radius: 14px;               /* kompaktnější tvar */
+    margin: 0;                         /* používáme gap */
+  }
+}
+
+/* extra zmenšení pro užší telefony (iPhone SE apod.) */
+@media (max-width: 360px){
+  .nk-mobilemenu .nk-mm-copy .nav{ 
+    margin-left: 32px;
+    gap: 4px 6px;
+  }
+  .nk-mobilemenu .nk-mm-copy .nav .nav-link{
+    padding: 5px 8px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
+}
+/* jednotná dělicí čára */
+.nk-sidebar .nk-divider,
+.nk-mobilemenu .nk-mm-copy .nk-divider{
+  list-style:none;
+  height:0;
+  margin:12px 0;
+  border-top:1px solid var(--line);
+}
+
+/* spodní odkazy – sidebar (desktop) */
+.nk-sidebar .nk-extra{
+  display:block;
+  padding:6px 8px;
+  color:#0d47a1;
+  text-decoration:none;
+  border-radius:10px;
+}
+.nk-sidebar .nk-extra:hover{ background:#eef4ff; }
+
+/* spodní odkazy – mobilní menu (bloková tlačítka, ne „pilulky“) */
+@media (max-width: 960px){
+  .nk-mobilemenu .nk-mm-copy .nk-extra{
+    display:block;
+    padding:10px 12px;
+    border:1px solid var(--panel-brd);
+    border-radius:12px;
+    background:#fff;
+    color:#0d47a1;
+    text-decoration:none;
+    margin-bottom:8px;
+  }
+}

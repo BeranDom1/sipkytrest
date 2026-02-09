@@ -1,0 +1,14 @@
+{
+  "name": "Šipky Třešť – Liga",
+  "short_name": "Šipky Třešť",
+  "start_url": "/liga-app/?source=pwa",
+  "scope": "/liga-app/",
+  "display": "standalone",
+  "theme_color": "#0d47a1",
+  "background_color": "#ffffff",
+  "icons": [
+    { "src": "/liga-app/icons/sipky-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/liga-app/icons/sipky-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/liga-app/icons/sipky-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

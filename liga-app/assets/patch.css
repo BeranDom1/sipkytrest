@@ -1,0 +1,172 @@
+
+/* === Layout + sticky footer + table overflow (design fix) === */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  background: #f5f7fb;
+  color: #1f2937;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+}
+
+/* Top header */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255,255,255,.85);
+  backdrop-filter: saturate(140%) blur(6px);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.site-header__inner {
+  width: min(1200px, 100% - 2rem);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.brand__logo {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08);
+}
+.brand__name {
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: .2px;
+}
+.brand__spacer { flex: 1; }
+
+/* Grid wrapper: sidebar + content */
+.wrapper {
+  width: min(1200px, 100% - 2rem);
+  margin: 16px auto 0;
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .wrapper { grid-template-columns: 1fr; }
+}
+
+main, #content {
+  flex: 1 0 auto;
+  min-width: 0;
+  padding: 6px 0 16px;
+}
+
+/* Footer */
+footer, .site-footer, .main-footer {
+  margin-top: auto;
+  flex-shrink: 0;
+  width: 100%;
+  text-align: center;
+  color: #6b7280;
+  padding: 10px 0 18px;
+  background: transparent;
+  font-size: 14px;
+}
+
+/* Sidebar */
+.sidebar {
+  align-self: start;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+}
+.sidebar ul { list-style: none; padding: 0; margin: 0; }
+.sidebar li { margin: 2px 0; }
+.sidebar a {
+  display: block;
+  padding: 6px 8px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #0d47a1;
+}
+.sidebar a:hover, .sidebar a[aria-current="page"] {
+  background: #eef4ff;
+  text-decoration: none;
+  color: #0a3a86;
+}
+.sidebar b, .sidebar strong { display: block; margin: 6px 2px 2px; color: #111827; }
+
+/* Content defaults – nevnucujeme "card" všemu */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 1px 6px rgba(0,0,0,.06);
+}
+
+/* Typografie */
+h1, h2, h3 { color: #111827; }
+h1 { font-size: clamp(28px, 3.4vw, 36px); margin: 0 0 12px; }
+h2 { font-size: clamp(22px, 2.6vw, 28px); margin: 0 0 10px; }
+h3 { font-size: clamp(18px, 2.2vw, 22px); margin: 16px 0 8px; }
+
+/* Tabulky – horizontální posuv jen uvnitř tabulky */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 8px 0;
+}
+.table-wrap > table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+/* Basic table skin (jemný) – aplikuj jen na .table */
+.table {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.table thead th {
+  background: #111827;
+  color: #facc15;
+  text-align: left;
+  padding: .6rem .8rem;
+  font-weight: 700;
+}
+.table tbody td {
+  padding: .55rem .8rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+.table tbody tr:last-child td { border-bottom: 0; }
+
+/* zvýraznění umístění */
+tr:nth-child(1) { background: #eafff0; }
+tr:nth-child(2) { background: #f2ffe8; }
+tr:nth-child(3) { background: #fff7da; }
+
+/* Stacked tabulky na malých displejích (volitelné) */
+@media (max-width: 600px) {
+  table.stacked thead { display: none; }
+  table.stacked tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .25rem .5rem;
+    border-bottom: 1px solid #e5e7eb;
+    padding: .5rem 0;
+  }
+  table.stacked td { display: contents; }
+  table.stacked td::before {
+    content: attr(data-label);
+    font-weight: 600;
+  }
+}

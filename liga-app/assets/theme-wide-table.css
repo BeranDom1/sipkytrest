@@ -1,0 +1,10 @@
+
+/* === Wide table hotfix (2025-08-22) === */
+.table-wrap > table { width: 100% !important; table-layout: auto; }
+.table th:nth-child(2), .table td:nth-child(2) { width: 40%; }
+.table th:nth-child(n+3), .table td:nth-child(n+3) { text-align: center; }
+.nk-content .card, .nk-content > .table-wrap, .nk-content > .card .table-wrap { width: 100%; }
+@media (min-width: 1024px) {
+  .table thead th { padding: .7rem .9rem; }
+  .table tbody td { padding: .65rem .9rem; }
+}

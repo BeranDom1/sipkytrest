@@ -1,0 +1,18 @@
+
+/* === Compact gap override (2025-08-22) ===
+   Zmenší mezeru mezi levým menu a hlavním obsahem.
+   Přidejte do <head> až ZA theme.css (a případně wide-table CSS). */
+
+.nk-wrapper{
+  grid-template-columns: 220px 1fr; /* sidebar lehce užší */
+  gap: 8px;                        /* původně 24px */
+}
+
+@media (min-width: 1280px){
+  .nk-wrapper{ gap: 16px; }         /* na hodně širokých displejích trochu víc místa */
+}
+
+/* Lehká kompaktnost prvků – opticky zmenší mezeru kolem sidebaru i obsahu */
+.nk-sidebar{ padding: 10px 10px; border-radius: 10px; }
+.nk-content{ padding: 6px 0 14px; }
+.card{ border-radius: 14px; padding: 16px 18px; } /* volitelné, klidně smažte */
