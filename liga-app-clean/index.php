@@ -30,14 +30,14 @@ $season         = detect_active_season($conn);
 $rocnik_id      = (int)$season['id'];
 $nazev_rocniku  = (string)$season['nazev'];
 
-// === Celkem odehraných zápasů (kdokoli dosáhl 7) ============================
+// === Celkem odehraných zápasů (ligy 1-5: skore 7, liga 6 ženy: skore 5) ======
 $total_played = 0;
 if ($stmt = $conn->prepare("
   SELECT COUNT(*) AS c
   FROM zapasy
   WHERE rocnik_id = ?
-    AND liga_id BETWEEN 1 AND 5
-    AND (skore1 = 7 OR skore2 = 7)
+    AND ((liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7))
+         OR (liga_id = 6 AND (skore1 = 5 OR skore2 = 5)))
 ")) {
   $stmt->bind_param('i', $rocnik_id);
   $stmt->execute();
@@ -52,11 +52,15 @@ $leagueRows = [];
 if ($stmt = $conn->prepare("
   SELECT l.id, l.nazev,
          COUNT(z.id) AS total,
-         SUM(CASE WHEN (z.skore1 = 7 OR z.skore2 = 7) THEN 1 ELSE 0 END) AS played
+         SUM(CASE 
+           WHEN l.id IN (1,2,3,4,5) AND (z.skore1 = 7 OR z.skore2 = 7) THEN 1
+           WHEN l.id = 6 AND (z.skore1 = 5 OR z.skore2 = 5) THEN 1
+           ELSE 0
+         END) AS played
   FROM ligy l
   LEFT JOIN zapasy z
     ON z.liga_id = l.id AND z.rocnik_id = ?
-  WHERE l.id BETWEEN 1 AND 5
+  WHERE l.id BETWEEN 1 AND 6
   GROUP BY l.id, l.nazev
   ORDER BY l.cislo
 ")) {
@@ -76,7 +80,7 @@ if ($rocnik_id === 1) {
     SELECT 1
     FROM zapasy
     WHERE rocnik_id = ?
-      AND liga_id BETWEEN 1 AND 5
+      AND ((liga_id BETWEEN 1 AND 5) OR liga_id = 6)
       AND (
         average_home IS NOT NULL OR average_away IS NOT NULL OR
         COALESCE(high_finish_home,0) > 0 OR COALESCE(high_finish_away,0) > 0 OR
@@ -102,17 +106,17 @@ $topHF  = ['jmeno' => '—', 'val' => null];
 $topHB  = ['jmeno' => '—', 'val' => null];
 
 if ($showTops) {
-  // 1) Největší průměr
+  // 1) Největší průměr - všechny ligy
   if ($stmt = $conn->prepare("
     SELECT h.jmeno, ROUND(AVG(a.val), 2) AS avg_val
     FROM (
       SELECT hrac1_id AS hrac_id, average_home AS val
       FROM zapasy
-      WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5 AND average_home IS NOT NULL
+      WHERE rocnik_id=? AND average_home IS NOT NULL
       UNION ALL
       SELECT hrac2_id AS hrac_id, average_away AS val
       FROM zapasy
-      WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5 AND average_away IS NOT NULL
+      WHERE rocnik_id=? AND average_away IS NOT NULL
     ) a
     JOIN hraci h ON h.id = a.hrac_id
     GROUP BY h.id
@@ -126,17 +130,17 @@ if ($showTops) {
     $stmt->close();
   }
 
-  // 2) Největší zavření
+  // 2) Největší zavření - všechny ligy
   if ($stmt = $conn->prepare("
     SELECT h.jmeno, MAX(a.val) AS hf
     FROM (
       SELECT hrac1_id AS hrac_id, high_finish_home AS val
       FROM zapasy
-      WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5
+      WHERE rocnik_id=?
       UNION ALL
       SELECT hrac2_id AS hrac_id, high_finish_away AS val
       FROM zapasy
-      WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5
+      WHERE rocnik_id=?
     ) a
     JOIN hraci h ON h.id = a.hrac_id
     GROUP BY h.id
@@ -160,11 +164,11 @@ if ($showTops) {
     FROM (
       SELECT hrac1_id AS hrac_id, {$expr_home} AS hb
       FROM zapasy
-      WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5
+      WHERE rocnik_id=?
       UNION ALL
       SELECT hrac2_id AS hrac_id, {$expr_away} AS hb
       FROM zapasy
-      WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5
+      WHERE rocnik_id=?
     ) a
     JOIN hraci h ON h.id = a.hrac_id
     GROUP BY h.id

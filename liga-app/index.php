@@ -244,5 +244,5 @@ $sponsors = [
         <?php endforeach; ?>
     </div>
 </section>
-
+TEST
 <?php include 'footer.php'; ?>
