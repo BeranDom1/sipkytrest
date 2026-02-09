@@ -52,8 +52,11 @@ $rocnik_id      = (int)$season['id'];
 $nazev_rocniku  = (string)$season['nazev'];
 $base           = $BASE_URL ?? '/liga-app';
 $WOMEN_LIGA_ID = 6; // Holoubek a Svoboda – liga ženy
-// Celkem odehraných zápasů
-$st = $conn->prepare("SELECT COUNT(*) AS c FROM zapasy WHERE rocnik_id = ? AND liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)");
+// Celkem odehraných zápasů (ligy 1-5 = skore 7, liga 6 = skore 5)
+$st = $conn->prepare("SELECT COUNT(*) AS c FROM zapasy WHERE rocnik_id = ? AND (
+  (liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)) OR 
+  (liga_id = 6 AND (skore1 = 5 OR skore2 = 5))
+)");
 $st->bind_param('i', $rocnik_id);
 $st->execute();
 $total_played = (int)$st->get_result()->fetch_assoc()['c'];
@@ -66,7 +69,10 @@ $topHF  = ['jmeno' => '—', 'val' => null];
 $topHB  = ['jmeno' => '—', 'val' => null];
 
 if ($rocnik_id !== 1) {
-    $st = $conn->prepare("SELECT 1 FROM zapasy WHERE rocnik_id = ? AND liga_id BETWEEN 1 AND 5 AND (average_home IS NOT NULL OR average_away IS NOT NULL) LIMIT 1");
+    $st = $conn->prepare("SELECT 1 FROM zapasy WHERE rocnik_id = ? AND (
+      (liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)) OR 
+      (liga_id = 6 AND (skore1 = 5 OR skore2 = 5))
+    ) AND (average_home IS NOT NULL OR average_away IS NOT NULL) LIMIT 1");
     $st->bind_param('i', $rocnik_id);
     $st->execute();
     $showTops = (bool)$st->get_result()->fetch_row();
@@ -74,33 +80,51 @@ if ($rocnik_id !== 1) {
 }
 
 if ($showTops) {
-    // 1. TOP Průměr
+    // 1. TOP Průměr (bráno všechny ligy, správné skóre dle typu)
     $st = $conn->prepare("SELECT u.jmeno, ROUND(AVG(a.val),2) AS avg_val FROM (
-        SELECT hrac1_id AS hid, average_home AS val FROM zapasy WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5 AND average_home IS NOT NULL AND (skore1 = 7 OR skore2 = 7)
+        SELECT hrac1_id AS hid, average_home AS val FROM zapasy WHERE rocnik_id=? AND average_home IS NOT NULL AND (
+          (liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)) OR 
+          (liga_id = 6 AND (skore1 = 5 OR skore2 = 5))
+        )
         UNION ALL
-        SELECT hrac2_id AS hid, average_away AS val FROM zapasy WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5 AND average_away IS NOT NULL AND (skore1 = 7 OR skore2 = 7)
+        SELECT hrac2_id AS hid, average_away AS val FROM zapasy WHERE rocnik_id=? AND average_away IS NOT NULL AND (
+          (liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)) OR 
+          (liga_id = 6 AND (skore1 = 5 OR skore2 = 5))
+        )
     ) a JOIN hraci_unikatni_jmena u ON u.libovolne_id = a.hid GROUP BY u.libovolne_id, u.jmeno ORDER BY avg_val DESC LIMIT 1");
     $st->bind_param('ii', $rocnik_id, $rocnik_id);
     $st->execute();
     if ($r = $st->get_result()->fetch_assoc()) $topAvg = ['jmeno' => $r['jmeno'], 'val' => $r['avg_val']];
     $st->close();
 
-    // 2. TOP Zavření (High Finish)
+    // 2. TOP Zavření (High Finish) - všechny ligy
     $st = $conn->prepare("SELECT u.jmeno, MAX(a.val) AS hf FROM (
-        SELECT hrac1_id AS hid, high_finish_home AS val FROM zapasy WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)
+        SELECT hrac1_id AS hid, high_finish_home AS val FROM zapasy WHERE rocnik_id=? AND (
+          (liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)) OR 
+          (liga_id = 6 AND (skore1 = 5 OR skore2 = 5))
+        )
         UNION ALL
-        SELECT hrac2_id AS hid, high_finish_away AS val FROM zapasy WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)
+        SELECT hrac2_id AS hid, high_finish_away AS val FROM zapasy WHERE rocnik_id=? AND (
+          (liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)) OR 
+          (liga_id = 6 AND (skore1 = 5 OR skore2 = 5))
+        )
     ) a JOIN hraci_unikatni_jmena u ON u.libovolne_id = a.hid GROUP BY u.libovolne_id, u.jmeno ORDER BY hf DESC LIMIT 1");
     $st->bind_param('ii', $rocnik_id, $rocnik_id);
     $st->execute();
     if ($r = $st->get_result()->fetch_assoc()) $topHF = ['jmeno' => $r['jmeno'], 'val' => (int)$r['hf']];
     $st->close();
 
-    // 3. TOP Hodobody
+    // 3. TOP Hodobody - všechny ligy
     $st = $conn->prepare("SELECT u.jmeno, SUM(a.body) AS body FROM (
-        SELECT hrac1_id AS hid, COALESCE(count_100p_home,0)*1 + COALESCE(count_120p_home,0)*2 + COALESCE(count_140p_home,0)*3 + COALESCE(count_160p_home,0)*4 + COALESCE(count_180_home,0)*5 AS body FROM zapasy WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)
+        SELECT hrac1_id AS hid, COALESCE(count_100p_home,0)*1 + COALESCE(count_120p_home,0)*2 + COALESCE(count_140p_home,0)*3 + COALESCE(count_160p_home,0)*4 + COALESCE(count_180_home,0)*5 AS body FROM zapasy WHERE rocnik_id=? AND (
+          (liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)) OR 
+          (liga_id = 6 AND (skore1 = 5 OR skore2 = 5))
+        )
         UNION ALL
-        SELECT hrac2_id AS hid, COALESCE(count_100p_away,0)*1 + COALESCE(count_120p_away,0)*2 + COALESCE(count_140p_away,0)*3 + COALESCE(count_160p_away,0)*4 + COALESCE(count_180_away,0)*5 AS body FROM zapasy WHERE rocnik_id=? AND liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)
+        SELECT hrac2_id AS hid, COALESCE(count_100p_away,0)*1 + COALESCE(count_120p_away,0)*2 + COALESCE(count_140p_away,0)*3 + COALESCE(count_160p_away,0)*4 + COALESCE(count_180_away,0)*5 AS body FROM zapasy WHERE rocnik_id=? AND (
+          (liga_id BETWEEN 1 AND 5 AND (skore1 = 7 OR skore2 = 7)) OR 
+          (liga_id = 6 AND (skore1 = 5 OR skore2 = 5))
+        )
     ) a JOIN hraci_unikatni_jmena u ON u.libovolne_id = a.hid GROUP BY u.libovolne_id, u.jmeno ORDER BY body DESC LIMIT 1");
     $st->bind_param('ii', $rocnik_id, $rocnik_id);
     $st->execute();
@@ -117,9 +141,21 @@ $hasLigaNazvy = (bool)$st->get_result()->fetch_row();
 $st->close();
 
 if ($hasLigaNazvy) {
-    $st = $conn->prepare("SELECT ln.liga_id AS id, ln.nazev, SUM(CASE WHEN (z.skore1=7 OR z.skore2=7) THEN 1 ELSE 0 END) AS played FROM ligy_nazvy ln LEFT JOIN zapasy z ON z.liga_id=ln.liga_id AND z.rocnik_id=ln.rocnik_id WHERE ln.rocnik_id=? GROUP BY ln.liga_id, ln.nazev ORDER BY ln.liga_id");
+    $st = $conn->prepare("SELECT ln.liga_id AS id, ln.nazev, SUM(
+      CASE 
+        WHEN ln.liga_id IN (1,2,3,4,5) AND (z.skore1=7 OR z.skore2=7) THEN 1
+        WHEN ln.liga_id=6 AND (z.skore1=5 OR z.skore2=5) THEN 1
+        ELSE 0 
+      END
+    ) AS played FROM ligy_nazvy ln LEFT JOIN zapasy z ON z.liga_id=ln.liga_id AND z.rocnik_id=ln.rocnik_id WHERE ln.rocnik_id=? GROUP BY ln.liga_id, ln.nazev ORDER BY ln.liga_id");
 } else {
-    $st = $conn->prepare("SELECT l.id, l.nazev, SUM(CASE WHEN (z.skore1=7 OR z.skore2=7) THEN 1 ELSE 0 END) AS played FROM ligy l LEFT JOIN zapasy z ON z.liga_id=l.id AND z.rocnik_id=? WHERE l.id BETWEEN 1 AND 5 GROUP BY l.id, l.nazev ORDER BY l.cislo");
+    $st = $conn->prepare("SELECT l.id, l.nazev, SUM(
+      CASE 
+        WHEN l.id IN (1,2,3,4,5) AND (z.skore1=7 OR z.skore2=7) THEN 1
+        WHEN l.id=6 AND (z.skore1=5 OR z.skore2=5) THEN 1
+        ELSE 0
+      END
+    ) AS played FROM ligy l LEFT JOIN zapasy z ON z.liga_id=l.id AND z.rocnik_id=? GROUP BY l.id, l.nazev ORDER BY l.cislo");
 }
 $st->bind_param('i', $rocnik_id);
 $st->execute();
