@@ -77,6 +77,7 @@ a:hover {
     padding: 0.25rem 0.5rem; /* ještě menší prostor */
     box-shadow: 0 1px 4px rgba(0,0,0,0.15);
     text-align: center; /* nav umístit doprostřed */
+    transition: transform 0.2s ease;
 }
 
 .logo-link .logo-image {
@@ -104,6 +105,8 @@ a:hover {
     background: rgba(255,255,255,0.1);
 }
 
+.site-header .main-nav { margin-bottom: 0.5rem; }
+
 @media (max-width: 768px) {
     .main-nav ul {
         flex-direction: column;
@@ -119,7 +122,7 @@ a:hover {
 
 .hero {
     max-width: 720px;
-    margin: -0.75rem auto 1rem; /* více nahoře, méně dole */
+    margin: -0.75rem auto 1rem  auto; /* více nahoře, méně dole */
     text-align: center;
     padding: 0.5rem 1rem 1rem;
 }
@@ -193,20 +196,6 @@ a:hover {
     border-radius: 2px;
 }
 
-.section {
-    margin-bottom: 2.5rem;
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 16px;
-    padding: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.section h2 {
-    margin-top: 0;
-    margin-bottom: 0.75rem;
-    font-size: 1.4rem;
-}
-
 /* ABOUT + FOTO */
 .section.about {
     text-align: center;
@@ -254,6 +243,13 @@ a:hover {
     text-align: center;
     max-width: 900px;
     margin: 0 auto 2.5rem;
+}
+
+.contact-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
+    gap: 1.5rem 2rem;
+    justify-items: start;
 }
 
 .contact-name {
@@ -429,7 +425,7 @@ a:hover {
 
 .link-desc {
     font-size: 0.9rem;
-    color: #cccccc;
+    color: #666666;
 }
 
 /* lepší chování na mobilu */
@@ -458,7 +454,7 @@ a:hover {
 
 .link-desc {
     font-size: 0.9rem;
-    color: #cccccc;
+    color: #666666;
 }
 
 /* PATIČKA */
