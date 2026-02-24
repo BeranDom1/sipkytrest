@@ -138,6 +138,12 @@ a:hover {
     margin-top: 0.5rem;
 }
 
+/* tagline inside dark header should be light for contrast */
+.site-header .hero-tagline {
+    color: #ddd;
+    opacity: 0.85;
+}
+
 .hero-logo {
     margin-bottom: 1rem;
 }
