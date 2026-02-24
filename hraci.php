@@ -31,15 +31,20 @@ if ($result) {
 <body>
 
 <header class="site-header">
+    <nav class="main-nav" aria-label="Hlavní navigace">
+        <ul>
+            <li><a href="/">Domů</a></li>
+            <li><a href="hraci.php" aria-current="page">Hráči</a></li>
+            <li><a href="https://sipkytrest.cz/liga-app" target="_blank" rel="noopener noreferrer">Ligová aplikace</a></li>
+            <li><a href="https://www.stedar.org/alms/league/league.view" target="_blank" rel="noopener noreferrer">Liga Vysočina</a></li>
+            <li><a href="https://www.facebook.com/groups/1075319810414488" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+        </ul>
+    </nav>
     <div class="hero">
         <div class="hero-logo">
-            <a href="index.html">
+            <a href="/">
                 <img src="img/logo.png" alt="Šipky Třešť" class="logo-image">
             </a>
-        </div>
-
-        <div class="hero-buttons">
-            <a href="index.html" class="btn secondary">Zpět na úvod</a>
         </div>
     </div>
 </header>
@@ -68,8 +73,6 @@ if ($result) {
         </tbody>
     </table>
 </section>
-
-</main>
 
 </main>
 

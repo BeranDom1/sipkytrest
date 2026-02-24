@@ -1,11 +1,17 @@
-/* ZÁKLAD */
 :root {
-    --color-bg: #f2f4f7;          /* neutrálnější světlá */
-    --color-text: #2b2b2b;
-    --color-header-bg: #10121a;   /* jemně více modročerná */
-    --color-accent: #f4c430;
+    --color-bg: #e9eef3;
+    --color-surface: #f7fafc;
     --color-card: #ffffff;
-    --color-muted: #6a6a6a;
+    --color-header-bg: #0b1220;
+    --color-header-border: #162135;
+    --color-text: #1f2937;
+    --color-muted: #5b6575;
+    --color-accent: #d6b14c;
+    --color-accent-soft: rgba(214, 177, 76, 0.16);
+    --shadow-soft: 0 10px 26px rgba(11, 18, 32, 0.08);
+    --shadow-hover: 0 14px 28px rgba(11, 18, 32, 0.14);
+    --radius-lg: 18px;
+    --radius-md: 12px;
 }
 
 *,
@@ -17,19 +23,13 @@
 body {
     margin: 0;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--color-bg);
+    background: linear-gradient(180deg, #f1f5f9 0%, var(--color-bg) 240px, var(--color-bg) 100%);
     color: var(--color-text);
-    line-height: 1.6;
+    line-height: 1.65;
 }
 
 a {
     color: var(--color-accent);
-}
-
-
-/* ODKAZY & TLAČÍTKA */
-a {
-    color: #f4c430;
     text-decoration: none;
 }
 
@@ -37,25 +37,96 @@ a:hover {
     text-decoration: underline;
 }
 
+/* HLAVIČKA / HERO */
+.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(11, 18, 32, 0.97);
+    backdrop-filter: blur(4px);
+    border-bottom: 1px solid var(--color-header-border);
+    box-shadow: 0 8px 20px rgba(6, 10, 18, 0.26);
+    color: #fff;
+    text-align: center;
+    padding: 0.45rem 0.8rem 0.65rem;
+}
+
+.main-nav {
+    margin-bottom: 0.4rem;
+}
+
+.main-nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+}
+
+.main-nav a {
+    color: #f4f7ff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.main-nav a:hover,
+.main-nav a:focus {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    text-decoration: none;
+}
+
+.hero {
+    max-width: 560px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 0.2rem 0.6rem 0.4rem;
+}
+
+.hero-logo {
+    margin: 0;
+}
+
+.logo-image {
+    max-width: 170px;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.3));
+}
+
+.hero-tagline {
+    margin: 0.3rem 0 0;
+    color: rgba(235, 241, 255, 0.9);
+    font-size: 1rem;
+}
+
+/* PRVKY UI */
 .btn {
     display: inline-block;
-    padding: 0.75rem 1.5rem;
+    padding: 0.75rem 1.4rem;
     border-radius: 999px;
     font-weight: 600;
-    text-decoration: none;
     border: 1px solid transparent;
     margin: 0.25rem;
     text-align: center;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .btn.primary {
-    background: #f4c430;
-    color: #14141b;
+    background: var(--color-accent);
+    color: #101521;
 }
 
 .btn.primary:hover {
-    background: #ffd95a;
+    background: #e2bf62;
+    text-decoration: none;
 }
 
 .btn.secondary {
@@ -64,146 +135,60 @@ a:hover {
 }
 
 .btn.secondary:hover {
-    background: rgba(244, 196, 48, 0.1);
-}
-
-/* HLAVIČKA / HERO */
-.site-header {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: var(--color-header-bg);
-    color: #fff;
-    padding: 0.25rem 0.5rem; /* ještě menší prostor */
-    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-    text-align: center; /* nav umístit doprostřed */
-    transition: transform 0.2s ease;
-}
-
-.logo-link .logo-image {
-    max-width: 120px;
-}
-
-.main-nav ul {
-    list-style: none;
-    display: inline-flex; /* centr. v bloku */
-    gap: 1.25rem; /* menší mezera */
-    margin: 0;
-    padding: 0;
-}
-
-.main-nav a {
-    color: #fff;
+    background: var(--color-accent-soft);
     text-decoration: none;
-    font-weight: 600;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-}
-
-.main-nav a:hover,
-.main-nav a:focus {
-    background: rgba(255,255,255,0.1);
-}
-
-.site-header .main-nav { margin-bottom: 0.5rem; }
-
-@media (max-width: 768px) {
-    .main-nav ul {
-        flex-direction: column;
-        gap: 0.75rem;
-        background: var(--color-header-bg);
-        padding: 1rem;
-        position: absolute;
-        top: 100%;
-        right: 0;
-        display: none; /* will show via JS if needed */
-    }
-}
-
-.hero {
-    max-width: 720px;
-    margin: -0.75rem auto 1rem  auto; /* více nahoře, méně dole */
-    text-align: center;
-    padding: 0.5rem 1rem 1rem;
-}
-
-.hero-tagline {
-    font-size: 1.1rem;
-    color: var(--color-text);
-    opacity: 0.8;
-    margin-top: 0.5rem;
-}
-
-/* tagline inside dark header should be light for contrast */
-.site-header .hero-tagline {
-    color: #ddd;
-    opacity: 0.85;
-}
-
-.hero-logo {
-    margin-bottom: 1rem;
-}
-
-.logo-image {
-    max-width: 180px; /* menší vzhled */
-    width: 60%;
-    height: auto;
-}
-
-.hero-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
 }
 
 /* HLAVNÍ OBSAH */
 .main-content {
     max-width: 960px;
     margin: 0 auto;
-    padding: 2rem 1rem 3rem;
+    padding: 2rem 1rem 3.2rem;
 }
 
 .section {
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     background: var(--color-card);
     color: var(--color-text);
-    border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    border: 1px solid rgba(0,0,0,0.05);
+    border-radius: var(--radius-lg);
+    padding: 1.6rem;
+    border: 1px solid rgba(32, 48, 71, 0.07);
+    box-shadow: var(--shadow-soft);
 }
 
-.section.feature {
-    background: var(--color-card);
-    border: none;
+.section.feature,
+.section.sponsors,
+.section.partners,
+.section.links,
+.section.contact,
+.section.event,
+.section.about {
     text-align: center;
 }
 
 .section h2 {
     margin-top: 0;
-    margin-bottom: 0.75rem;
-    font-size: 1.4rem;
-    color: var(--color-text);
+    margin-bottom: 0.85rem;
+    font-size: 2rem;
+    font-size: clamp(1.5rem, 1.1rem + 1vw, 2rem);
+    color: #1d2634;
 }
 
 .section h2::after {
     content: "";
     display: block;
-    width: 60px;
-    height: 2px;
-    margin: 0.6rem auto 0;
+    width: 64px;
+    height: 3px;
+    margin: 0.55rem auto 0;
     background: var(--color-accent);
-    border-radius: 2px;
-}
-
-/* ABOUT + FOTO */
-.section.about {
-    text-align: center;
+    border-radius: 999px;
 }
 
 .section.about p {
     max-width: 700px;
     margin: 0.5rem auto 0;
+    color: #374151;
+    font-size: 1.04rem;
 }
 
 .hero-photo {
@@ -211,20 +196,12 @@ a:hover {
     width: 600px;
     height: auto;
     display: block;
-    margin: 0 auto 1.5rem;
-    border-radius: 12px;
+    margin: 0.9rem auto 0.4rem;
+    border-radius: var(--radius-md);
+    box-shadow: 0 14px 24px rgba(11, 18, 32, 0.16);
 }
 
-/* NEJBLIZSI UDALOST */
-.section.event {
-    text-align: center;
-}
-
-.event-text {
-    margin: 0 0 1rem;
-    font-size: 1rem;
-}
-
+/* NEJBLIŽŠÍ UDÁLOST */
 .event-poster-wrapper {
     display: flex;
     justify-content: center;
@@ -234,36 +211,56 @@ a:hover {
     max-width: 100%;
     width: 1000px;
     height: auto;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+    border-radius: var(--radius-md);
+    box-shadow: 0 16px 30px rgba(12, 20, 32, 0.24);
+}
+
+.event-video {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.video-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--radius-md);
+}
+
+.event-video-caption {
+    margin-top: 0.75rem;
+    font-size: 0.95rem;
+    color: var(--color-muted);
 }
 
 /* KONTAKT */
 .section.contact {
-    text-align: center;
     max-width: 900px;
-    margin: 0 auto 2.5rem;
+    margin: 0 auto 2rem;
 }
 
 .contact-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(320px,1fr));
-    gap: 1.5rem 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.3rem 1.8rem;
     justify-items: start;
 }
 
-.contact-name {
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
 .contact-row {
-    display: inline-flex;     /* sloupce vedle sebe */
+    display: inline-flex;
     align-items: flex-start;
     gap: 0.75rem;
-    margin: 0 2rem 1.3rem;
-    vertical-align: top;
-    text-align: left;         /* text uvnitř doleva */
+    margin: 0 1rem 1.15rem;
+    text-align: left;
 }
 
 .contact-icon {
@@ -273,28 +270,32 @@ a:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
-    background: rgba(244, 196, 48, 0.3);
+    font-size: 1.2rem;
+    background: var(--color-accent-soft);
     flex-shrink: 0;
 }
 
 .contact-text h3 {
-    margin: 0 0 0.25rem;
-    font-size: 1rem;
+    margin: 0 0 0.2rem;
+    font-size: 1.05rem;
 }
 
 .contact-text p {
     margin: 0;
 }
 
-.contact-muted {
-    font-size: 0.9rem;
-    opacity: 0.8;
+.contact-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
 }
 
-/* odkazy v kontaktu */
+.contact-muted {
+    font-size: 0.93rem;
+    color: var(--color-muted);
+}
+
 .section.contact a {
-    color: #f4c430;
+    color: #c9a546;
     text-decoration: underline;
 }
 
@@ -302,18 +303,33 @@ a:hover {
     text-decoration: none;
 }
 
-/* SPONZOŘI / PARTNEŘI */
-.section.sponsors,
-.section.partners {
-    text-align: center;
+.copyable {
+    color: #c9a546;
+    cursor: pointer;
+    border-bottom: 1px dashed rgba(201, 165, 70, 0.55);
+    transition: opacity 0.15s ease, border-color 0.15s ease;
 }
 
+.copyable:hover {
+    opacity: 0.86;
+    border-bottom-color: #c9a546;
+}
+
+.copyable.copied::after {
+    content: " ✓ zkopírováno";
+    margin-left: 0.4rem;
+    font-size: 0.85rem;
+    color: #4ea66f;
+}
+
+/* SPONZOŘI / PARTNEŘI */
 .sponsor-logos,
-.partners-grid {
+.partners-grid,
+.links-grid {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 2.5rem;
+    gap: 1.7rem;
     align-items: center;
     margin-top: 1rem;
 }
@@ -324,23 +340,24 @@ a:hover {
     flex-direction: column;
     align-items: center;
     text-decoration: none;
-    color: #333;
+    color: #334155;
     min-width: 160px;
 }
 
-/* jednotná dlaždice pro všechna loga */
 .logo-tile {
-    width: 160px;         /* šířka dlaždice */
-    height: 80px;         /* výška dlaždice */
-    background: #ffffff;  /* stejné bílé pozadí pro všechny */
-    border-radius: 12px;
+    width: 160px;
+    height: 80px;
+    background: var(--color-surface);
+    border-radius: var(--radius-md);
     padding: 0.25rem 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 0.5rem;
     overflow: hidden;
-    border: 1px solid rgba(0,0,0,0.05); /* jemnější okraj místo plné bílé */
+    border: 1px solid rgba(32, 48, 71, 0.1);
+    box-shadow: 0 4px 10px rgba(11, 18, 32, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .logo-tile img {
@@ -351,69 +368,41 @@ a:hover {
 
 .sponsor-logo span,
 .partner-logo span {
-    font-size: 0.9rem;
-    opacity: 0.9;
+    font-size: 0.93rem;
+    color: #4b5563;
 }
 
-/* hover efekt */
 .sponsor-logo:hover .logo-tile,
 .partner-logo:hover .logo-tile {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--shadow-hover);
     transform: translateY(-2px);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    border-color: rgba(214, 177, 76, 0.45);
 }
 
 .sponsor-logo:hover span,
 .partner-logo:hover span {
-    color: #f4c430;
+    color: #a9882f;
 }
 
-/* responsivita */
-@media (max-width: 600px) {
-    .sponsor-logos,
-    .partners-grid {
-        gap: 1.5rem;
-    }
-
-    .logo-tile {
-        width: 140px;
-        height: 70px;
-    }
-}
-
-
-/* ODKAZOVÉ KARTY (Sleduj nás) */
-/* SEKCE "SLEDUJ NÁS" – DLAŽDICE */
-.section.links {
-    text-align: center;
-}
-
-.links-grid {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 1rem;
-}
-
+/* ODKAZOVÉ KARTY */
 .link-card {
     min-width: 180px;
     max-width: 220px;
-    padding: 0.8rem 1rem;
-    border-radius: 12px;
-    background: #fafafa; /* světlá karta */
-    border: 1px solid rgba(0,0,0,0.1);
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    border: 1px solid rgba(32, 48, 71, 0.12);
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .link-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-    border-color: #f4c430;
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(214, 177, 76, 0.55);
     text-decoration: none;
 }
 
@@ -425,53 +414,14 @@ a:hover {
 
 .link-desc {
     font-size: 0.9rem;
-    color: #666666;
-}
-
-/* lepší chování na mobilu */
-@media (max-width: 600px) {
-    .links-grid {
-        gap: 1.2rem;
-    }
-
-    .link-card {
-        max-width: 100%;
-    }
-}
-
-.link-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
-    border-color: #f4c430;
-    text-decoration: none;
-}
-
-.link-title {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-}
-
-.link-desc {
-    font-size: 0.9rem;
-    color: #666666;
-}
-
-/* PATIČKA */
-.site-footer {
-    text-align: center;
-    padding: 1rem;
-    font-size: 0.85rem;
     color: var(--color-muted);
-    border-top: 1px solid rgba(0,0,0,0.1);
-    background: var(--color-bg);
 }
 
 /* POPUP */
 .popup-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(5, 8, 15, 0.84);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -482,10 +432,10 @@ a:hover {
     position: relative;
     max-width: 90vw;
     max-height: 90vh;
-    background: #111;
+    background: #111827;
     border-radius: 16px;
-    padding: 1rem 1rem 1.5rem;
-    border: 1px solid #f4c430;
+    padding: 1rem 1rem 1.45rem;
+    border: 1px solid rgba(214, 177, 76, 0.6);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -504,200 +454,141 @@ a:hover {
     right: 0.7rem;
     background: transparent;
     border: none;
-    color: #ffffff;
+    color: #fff;
     font-size: 1.8rem;
     cursor: pointer;
     line-height: 1;
 }
 
+/* PATIČKA */
+.site-footer {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.86rem;
+    color: var(--color-muted);
+    border-top: 1px solid rgba(32, 48, 71, 0.12);
+    background: transparent;
+}
+
 /* RESPONSIVE */
-@media (max-width: 600px) {
+@media (max-width: 700px) {
     .site-header {
-        padding-top: 2rem;
+        padding: 0.4rem 0.6rem 0.5rem;
+    }
+
+    .main-nav ul {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 0.1rem;
+    }
+
+    .main-nav a {
+        white-space: nowrap;
+        font-size: 0.9rem;
+        padding: 0.35rem 0.65rem;
+    }
+
+    .logo-image {
+        max-width: 126px;
+    }
+
+    .hero-tagline {
+        font-size: 0.92rem;
+    }
+
+    .main-content {
+        padding: 1.5rem 0.75rem 2.5rem;
     }
 
     .section {
-        padding: 1.1rem;
+        padding: 1.15rem;
+        border-radius: 14px;
     }
 
-    .hero-photo {
+    .contact-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .section.contact .contact-row {
+        display: flex;
+        margin: 0 0 1rem;
         width: 100%;
     }
 
     .sponsor-logos,
-    .partners-grid {
-        gap: 1.5rem;
+    .partners-grid,
+    .links-grid {
+        gap: 1rem;
     }
 
-    .sponsor-logo img,
-    .partner-logo img {
-        max-height: 50px;
+    .logo-tile {
+        width: 140px;
+        height: 70px;
     }
-}
-.btn.primary {
-    background: #f4c430;
-    color: #14141b;
-}
 
-.btn.primary:hover {
-    background: #ffd95a;
-}
-.event-video {
-    margin-top: 1.5rem;
-}
-
-.video-wrapper {
-    position: relative;
-    padding-bottom: 56.25%; /* 16:9 */
-    height: 0;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.video-wrapper iframe {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border-radius: 12px;
-}
-.event-video {
-    margin-top: 1.5rem;
-    text-align: center;
-}
-
-.event-video-caption {
-    margin-top: 0.75rem;
-    font-size: 0.95rem;
-    color: #dddddd;
-    opacity: 0.9;
-}
-@media (max-width: 700px) {
-
-    /* kontakt přes celou šířku */
-    .section.contact {
+    .link-card {
+        min-width: 160px;
         max-width: 100%;
-        margin: 0 auto 2rem;
-    }
-
-    /* každý kontakt na vlastní řádek */
-    .section.contact .contact-row {
-        display: flex;          /* přepíše inline-flex */
-        margin: 0 0 1.3rem;     /* pryč boční 2rem */
-        justify-content: flex-start;
-        width: 100%;            /* ať využije celou šířku */
     }
 }
-/* kopírovatelné údaje */
-.copyable {
-    color: #f4c430;
-    cursor: pointer;
-    border-bottom: 1px dashed rgba(244, 196, 48, 0.6);
-    transition: opacity 0.15s ease, border-color 0.15s ease;
+
+/* HRÁČI – TABULKA */
+.main-nav a[aria-current="page"] {
+    background: rgba(214, 177, 76, 0.2);
+    color: #ffffff;
 }
 
-.copyable:hover {
-    opacity: 0.85;
-    border-bottom-color: #f4c430;
-}
-
-/* krátká hláška po zkopírování */
-.copyable.copied::after {
-    content: " ✓ zkopírováno";
-    margin-left: 0.4rem;
-    font-size: 0.85rem;
-    color: #9be37d;
-}
-/* =========================
-   VIZUÁLNÍ HIERARCHIE
-========================= */
-
-.section.feature {
-    /* light card for featured blocks */
-    background: var(--color-card);
-    border: none;
-    text-align: center;
-    color: var(--color-text);
-}
-
-/* oddělovací linka pod nadpisem */
-.section h2::after {
-    content: "";
-    display: block;
-    width: 60px;
-    height: 2px;
-    margin: 0.6rem auto 0;
-    background: #f4c430;
-    border-radius: 2px;
-}
-
-/* úvodní text – vzdušnější */
-.section.about p {
-    font-size: 1.05rem;
-    line-height: 1.8;
-    opacity: 0.9;
-}
-
-/* hero slogan */
-.hero-tagline {
-    margin-top: 1rem;
-    font-size: 0.95rem;
-    opacity: 0.85;
-}
-
-/* obrázky – víc „statusu“ */
-.hero-photo,
-.event-poster {
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.08);
-}
-
-/* event plakát */
-.event-poster {
-    cursor: zoom-in;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.event-poster:hover {
-    transform: scale(1.01);
-    box-shadow: 0 10px 24px rgba(0,0,0,0.7);
-}
-
-/* kontakt – klidnější zóna */
-.section.contact {
-    background: var(--color-card);
-}
 .players-table {
-    width: 100%;
+    width: min(100%, 760px);
+    margin: 1rem auto 0;
     border-collapse: collapse;
-    margin-top: 1rem;
-    font-size: 0.95rem;
+    background: var(--color-surface);
+    border: 1px solid rgba(32, 48, 71, 0.12);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: 0 8px 18px rgba(11, 18, 32, 0.06);
 }
 
 .players-table th,
 .players-table td {
-    padding: 0.6rem 0.8rem;
     text-align: left;
+    padding: 0.72rem 0.85rem;
+    font-size: 0.97rem;
 }
 
-.players-table thead th {
-    border-bottom: 2px solid #f4c430;
-    color: #f4c430;
+.players-table th {
+    color: #1d2634;
+    background: rgba(214, 177, 76, 0.15);
+    border-bottom: 1px solid rgba(32, 48, 71, 0.14);
 }
 
 .players-table tbody tr {
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(32, 48, 71, 0.09);
+}
+
+.players-table tbody tr:last-child {
+    border-bottom: none;
 }
 
 .players-table tbody tr:hover {
-    background: rgba(255,255,255,0.03);
+    background: rgba(214, 177, 76, 0.08);
 }
 
-/* mobil */
-@media (max-width: 600px) {
+.players-table td:first-child {
+    width: 120px;
+    color: #243247;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 700px) {
+    .players-table {
+        font-size: 0.92rem;
+    }
+
     .players-table th,
     .players-table td {
-        padding: 0.5rem;
-        font-size: 0.9rem;
+        padding: 0.62rem 0.6rem;
     }
 }
