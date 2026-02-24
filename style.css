@@ -665,7 +665,7 @@ a:hover {
 
 /* kontakt – klidnější zóna */
 .section.contact {
-    background: rgba(255,255,255,0.015);
+    background: var(--color-card);
 }
 .players-table {
     width: 100%;
