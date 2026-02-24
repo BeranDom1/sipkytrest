@@ -617,9 +617,11 @@ a:hover {
 ========================= */
 
 .section.feature {
-    background: radial-gradient(circle at top, #1f1f2e, #0b0b0f);
-    border: 1px solid rgba(244, 196, 48, 0.25);
+    /* light card for featured blocks */
+    background: var(--color-card);
+    border: none;
     text-align: center;
+    color: var(--color-text);
 }
 
 /* oddělovací linka pod nadpisem */
