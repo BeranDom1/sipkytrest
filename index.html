@@ -5,38 +5,39 @@
     <title>Šipky Třešť</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Oficiální stránky šipkařského klubu Šipky Třešť">
+    <!-- Google font for modern look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header class="site-header">
+    <div class="header-inner">
+        <a href="/" class="logo-link">
+            <img src="img/logo.png" alt="Šipky Třešť" class="logo-image">
+        </a>
+        <nav class="main-nav" aria-label="Hlavní navigace">
+            <ul>
+                <li><a href="/">Domů</a></li>
+                <li><a href="hraci.php">Hráči</a></li>
+                <li><a href="https://sipkytrest.cz/liga-app" target="_blank" rel="noopener noreferrer">Ligová aplikace</a></li>
+                <li><a href="https://www.stedar.org/alms/league/league.view" target="_blank" rel="noopener noreferrer">Liga Vysočina</a></li>
+                <li><a href="https://www.facebook.com/groups/1075319810414488" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+            </ul>
+        </nav>
+    </div>
     <div class="hero">
         <div class="hero-logo">
             <img src="img/logo.png" alt="Šipky Třešť" class="logo-image">
         </div>
-
-        <div class="hero-buttons">
-            <a href="https://sipkytrest.cz/liga-app" target="_blank" rel="noopener noreferrer" class="btn secondary">
-                Otevřít ligovou aplikaci
-            </a>
-            <a href="https://www.stedar.org/alms/league/league.view" target="_blank" rel="noopener noreferrer" class="btn secondary">
-                Liga Vysočina
-            </a>
-            <a href="https://www.facebook.com/groups/1075319810414488" target="_blank" rel="noopener noreferrer" class="btn secondary">
-                Facebook Šipky Třešť
-            </a>
-            <a href="hraci.php" class="btn secondary">
-                Hráči
-            </a>
-
-        </div>
-
-    
+        <p class="hero-tagline">Šipkařský klub z Třeště – atmosféra, férovost a chuť zlepšovat se.</p>
     </div>
 </header>
 
-<main class="main-content">
+<main class="main-content"> <!-- obsah je nyní ve světlých kartách pro čitelnost -->
 
     <!-- FEATURE -->
     <section class="section about feature">
