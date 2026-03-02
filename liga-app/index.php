@@ -228,7 +228,7 @@ $sponsors = [
     ['name'=>'Restaurace U Kapra', 'url'=>'https://www.u-kapra.cz/', 'img'=>'u-kapra.png'],
     ['name'=>'Město Třešť', 'url'=>'https://www.trest.cz/', 'img'=>'trest.png'],
     ['name'=>'Podlahy Svoboda', 'url'=>'https://www.facebook.com/PodlahySvoboda/', 'img'=>'svoboda.jpg'],
-    ['name'=>'Truhlářství Holoubek', 'url'=>'https://sipkytrest.cz/liga-app/sponzor/holoubek.jpg', 'img'=>'holoubek.jpg']
+    ['name'=>'Střechy Holoubek', 'url'=>'https://sipkytrest.cz/liga-app/sponzor/holoubek.jpg', 'img'=>'holoubek.jpg']
 ]; 
 ?>
 <section class="panel panel-sponsors">
