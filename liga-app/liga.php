@@ -12,7 +12,7 @@ $sql = "SELECT u.libovolne_id AS player_id, u.jmeno
         FROM hraci_v_sezone hs
         JOIN hraci_unikatni_jmena u ON u.libovolne_id = hs.hrac_id
         WHERE hs.rocnik_id = ? AND hs.liga_id = ?
-        ORDER BY u.jmeno";
+        ORDER BY hs.hrac_id";
 $st = $conn->prepare($sql);
 $st->bind_param('ii', $rocnik_id, $liga_id);
 $st->execute();
@@ -77,15 +77,15 @@ $st->close();
 /* 4) Převod na indexované pole a seřazení včetně minitabulky */
 $rows = array_values($stats); // zrušíme klíče pid, minitabulka čeká indexované pole
 
-// hrubé seřazení (body, RZD, jméno) – stabilní základ
+// hrubé seřazení (body, RZD) – abeceda nesmí rozhodovat pořadí
 usort($rows, function($a, $b){
     if ($a['body'] !== $b['body']) return $b['body'] <=> $a['body'];
     if ($a['RZD']  !== $b['RZD'])  return $b['RZD']  <=> $a['RZD'];
-    return strcasecmp($a['jmeno'], $b['jmeno']);
+    return 0;
 });
 
 // finální pořadí přes minitabulku pouze ve skupinách se shodnými body
-$rows = serad_hrace_s_rovnymi_body($rows, $conn, $rocnik_id);
+$rows = serad_hrace_s_rovnymi_body($rows, $conn, $rocnik_id, $liga_id);
 
 /* 5) Render */
 $nadpis = _liga_name($conn, $liga_id) . ' – ' . _rocnik_name($conn, $rocnik_id);
