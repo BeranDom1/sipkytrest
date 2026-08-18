@@ -2,6 +2,7 @@
 require __DIR__ . '/../db.php';
 require __DIR__ . '/pohar_funkce.php';
 session_start();
+require_once __DIR__ . '/../security/csrf.php';
 
 $turnaj_id = (int)($_GET['id'] ?? 0);
 
@@ -89,6 +90,7 @@ select, button {
 
 <?php while ($z = $zapasy->fetch_assoc()): ?>
 <form method="post" action="uloz_obsazeni.php" class="zapas">
+<?php csrf_input(); ?>
 <input type="hidden" name="zapas_id" value="<?= $z['id'] ?>">
 <input type="hidden" name="turnaj_id" value="<?= $turnaj_id ?>">
 

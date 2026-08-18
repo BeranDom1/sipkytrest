@@ -1,11 +1,15 @@
 <?php
-require __DIR__.'/../db.php';
 session_start();
+require_once __DIR__ . '/../security/csrf.php';
 
 if (!in_array($_SESSION['role'] ?? '', ['admin','stat_editor'], true)) {
     http_response_code(403);
     exit;
 }
+
+csrf_validate_ajax_or_die();
+
+require __DIR__.'/../db.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 $zapas_id = (int)($data['zapas_id'] ?? 0);

@@ -1,13 +1,17 @@
 <?php
-require __DIR__ . '/../db.php';
-require __DIR__ . '/pohar_funkce.php';
 session_start();
+require_once __DIR__ . '/../security/csrf.php';
 
 if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'stat_editor'], true)) {
     http_response_code(403);
     echo json_encode(['ok' => false, 'error' => 'Zakázáno']);
     exit;
 }
+
+csrf_validate_ajax_or_die();
+
+require __DIR__ . '/../db.php';
+require __DIR__ . '/pohar_funkce.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 
