@@ -66,3 +66,22 @@ if (!function_exists('csrf_check')) {
         return ($tokenFromSession !== null && is_string($token) && hash_equals($tokenFromSession, $token));
     }
 }
+
+/** Ověř CSRF token poslaný AJAX požadavkem v hlavičce X-CSRF-Token. */
+if (!function_exists('csrf_validate_ajax_or_die')) {
+    function csrf_validate_ajax_or_die() {
+        $token = isset($_SERVER['HTTP_X_CSRF_TOKEN'])
+            ? $_SERVER['HTTP_X_CSRF_TOKEN']
+            : '';
+
+        if (!csrf_check($token)) {
+            http_response_code(403);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'ok' => false,
+                'error' => 'Neplatný bezpečnostní token. Obnovte stránku.'
+            ]);
+            exit;
+        }
+    }
+}

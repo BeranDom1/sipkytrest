@@ -1,12 +1,16 @@
 <?php
-require __DIR__ . '/../db.php';
 session_start();
+require_once __DIR__ . '/../security/csrf.php';
 
 $role = $_SESSION['role'] ?? null;
 if (!in_array($role, ['admin', 'stat_editor'])) {
     http_response_code(403);
     exit('Přístup zakázán');
 }
+
+csrf_validate_or_die();
+
+require __DIR__ . '/../db.php';
 
 $zapas_id  = (int)$_POST['zapas_id'];
 $turnaj_id = (int)$_POST['turnaj_id'];

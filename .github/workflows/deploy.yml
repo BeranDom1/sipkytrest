@@ -25,3 +25,5 @@ jobs:
             .github/**
             node_modules/**
             .env
+            config/db.local.php
+            config/db.production.php

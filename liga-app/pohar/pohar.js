@@ -18,7 +18,10 @@ document.addEventListener('change', e => {
 
   fetch('/liga-app/pohar/ajax_prirazeni_hrace.php', {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': window.__CSRF_TOKEN__ || ''
+    },
     body: JSON.stringify({
       zapas_id: zapasId,
       slot: slot,
@@ -78,7 +81,10 @@ document.addEventListener('click', async e => {
   try {
     const res = await fetch('/liga-app/pohar/ajax_uloz_skore.php', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': window.__CSRF_TOKEN__ || ''
+      },
       body: JSON.stringify({
         zapas_id: zapasId,
         skore1: parseInt(s1, 10),
@@ -111,7 +117,10 @@ document.addEventListener('click', async e => {
   try {
     const res = await fetch('/liga-app/pohar/ajax_reset_zapas.php', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': window.__CSRF_TOKEN__ || ''
+      },
       body: JSON.stringify({ zapas_id: zapasId })
     });
 
@@ -140,7 +149,10 @@ document.addEventListener('click', async (e) => {
     try {
         const res = await fetch('/liga-app/pohar/ajax_zrus_bye.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-Token': window.__CSRF_TOKEN__ || ''
+            },
             body: JSON.stringify({ zapas_id: zapasId })
         });
 
