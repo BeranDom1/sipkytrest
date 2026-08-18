@@ -232,7 +232,7 @@ $sponsors = [
 ]; 
 ?>
 <section class="panel panel-sponsors">
-    <h3>Velký dík patří našim sponzorům: TEST</h3>
+    <h3>Velký dík patří našim sponzorům:</h3>
     <div class="sponsor-grid">
         <?php foreach ($sponsors as $sp): ?>
             <a class="sponsor-card" href="<?= htmlspecialchars($sp['url']) ?>" target="_blank">
