@@ -27,3 +27,4 @@ jobs:
             .env
             config/db.local.php
             config/db.production.php
+            liga-app-clean/**
