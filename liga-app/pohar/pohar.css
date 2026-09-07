@@ -251,3 +251,9 @@
   }
 
 }
+
+/* Dark theme: readable round headers. */
+html[data-theme="dark"] .kolo { border-color: #304047; }
+html[data-theme="dark"] .kolo-toggle { background: #1b292f; color: #e7eff1; }
+html[data-theme="dark"] .kolo-toggle:hover,
+html[data-theme="dark"] .kolo-toggle:focus-visible { background: #21434a; color: #ffffff; }
