@@ -20,16 +20,22 @@ require_once __DIR__.'/security/csrf.php';
 // uživatel (pro login / logout)
 $username = $_SESSION['username'] ?? null;
 
-// init active season (if not selected) – nejnovější ročník
+// Výchozí kontext = explicitně aktivní sezóna, ne pouze nejvyšší ID.
 if (empty($_SESSION['rocnik_id'])) {
     $q = $conn->query("
         SELECT id
         FROM rocniky
+        WHERE stav = 'aktivni'
         ORDER BY id DESC
         LIMIT 1
     ");
     if ($q && $r = $q->fetch_assoc()) {
         $_SESSION['rocnik_id'] = (int)$r['id'];
+    } else {
+        $fallback = $conn->query('SELECT id FROM rocniky ORDER BY id DESC LIMIT 1');
+        if ($fallback && $r = $fallback->fetch_assoc()) {
+            $_SESSION['rocnik_id'] = (int)$r['id'];
+        }
     }
 }
 
@@ -42,7 +48,7 @@ $title = $title ?? 'Šipky Třešť – liga';
 
 // seasons pro přepínač
 $seasons = [];
-if ($q = $conn->query("SELECT id, nazev FROM rocniky ORDER BY id DESC")) {
+if ($q = $conn->query("SELECT id, nazev, stav FROM rocniky ORDER BY id DESC")) {
     while ($r = $q->fetch_assoc()) $seasons[] = $r;
 }
 $selSeason = (int)($_SESSION['rocnik_id'] ?? 0);
@@ -94,12 +100,23 @@ if (!isset($hideRocnikDropdown)) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= htmlspecialchars($title) ?></title>
 
-  <link rel="stylesheet" href="<?= htmlspecialchars($BASE_URL) ?>/assets/theme.final.css?v=25">
-  <link rel="manifest" href="/liga-app/manifest.webmanifest?v=1">
-  <link rel="apple-touch-icon" sizes="180x180" href="/liga-app/icons/sipky-180.png">
+  <script>
+    (() => {
+      const saved = localStorage.getItem("sipky-theme");
+      const dark = saved ? saved === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = dark ? "dark" : "light";
+    })();
+  </script>
+
+  <link rel="stylesheet" href="<?= htmlspecialchars($BASE_URL) ?>/assets/theme.final.css?v=52">
+  <link rel="manifest" href="/liga-app/manifest.webmanifest?v=3">
+  <link rel="apple-touch-icon" href="/liga-app/icons/sipky-192.png">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Šipky Třešť">
 <meta name="mobile-web-app-title" content="Šipky Třešť">
-<meta name="theme-color" content="#111111">
+<meta name="theme-color" content="#164b57">
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -119,50 +136,90 @@ if (!isset($hideRocnikDropdown)) {
   <script defer src="<?= htmlspecialchars($BASE_URL) ?>/assets/csrf-autoinject.js"></script>
   <script defer src="<?= htmlspecialchars($BASE_URL) ?>/assets/theme.js?v=4"></script>
 </head>
-<body>
+<body class="<?= str_contains($__path, '/admin/') ? 'nk-admin-page' : 'nk-public-page' ?>">
      <!-- Tlačítko instalace PWA -->
-  <div style="text-align:center; margin:.5rem 0;">
+  <div id="pwaInstall" style="display:none; text-align:center; margin:.5rem 0;">
     <button id="installBtn" style="display:none; padding:.6rem 1rem; border:1px solid #e5e7eb; border-radius:.75rem; background:#fff; cursor:pointer;">
       📲 Nainstalovat ligu jako aplikaci
     </button>
     <small id="iosHint" style="display:none; color:#6b7280;">
       Na iOS otevři <b>Sdílet</b> → <b>Přidat na plochu</b>.
     </small>
+    <small id="androidHint" style="display:none; color:#6b7280;">
+      V menu prohlížeče zvol <b>Nainstalovat aplikaci</b> nebo <b>Přidat na plochu</b>.
+    </small>
   </div>
 
   <script>
-    let deferredPrompt;
+    let deferredPrompt = null;
+    const installBox = document.getElementById('pwaInstall');
     const installBtn = document.getElementById('installBtn');
     const iosHint = document.getElementById('iosHint');
+    const androidHint = document.getElementById('androidHint');
 
-    // zjištění platformy
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const displayMode = window.matchMedia('(display-mode: standalone)');
+    const isStandalone = () => displayMode.matches || window.navigator.standalone === true;
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isIOS = /iphone|ipad|ipod/i.test(userAgent)
+      || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /android/i.test(userAgent);
 
-// zjištění platformy
-const userAgent = navigator.userAgent.toLowerCase();
-const isIOS = /iphone|ipad|ipod/i.test(userAgent);
-const isAndroid = /android/i.test(userAgent);
-const isMobile = isIOS || isAndroid;
-
-if (!isStandalone) {
-  if (isIOS) {
-    iosHint.style.display = 'inline';  // jen iOS hint
-  }
-}
-
-// beforeinstallprompt – ukáže se jen na Androidu (ne Windows, ne desktop)
-window.addEventListener('beforeinstallprompt', (e) => {
-  if (!isMobile) return;   // pokud to není mobil, ignoruj
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = 'inline-block';
-  console.log('beforeinstallprompt captured (mobile)');
-});
-
-    window.addEventListener('appinstalled', () => {
-      console.log('PWA nainstalována');
+    function hideInstallOffer() {
+      installBox.style.display = 'none';
       installBtn.style.display = 'none';
       iosHint.style.display = 'none';
+      androidHint.style.display = 'none';
+    }
+
+    if (isStandalone()) {
+      hideInstallOffer();
+    } else if (isIOS) {
+      installBox.style.display = 'block';
+      iosHint.style.display = 'inline';
+    } else if (isAndroid) {
+      installBox.style.display = 'block';
+      installBtn.style.display = 'inline-flex';
+    }
+
+    // Chrome/Android událost pošle jen tehdy, když lze aplikaci instalovat.
+    window.addEventListener('beforeinstallprompt', (event) => {
+      if (!isAndroid || isStandalone()) return;
+      event.preventDefault();
+      deferredPrompt = event;
+      androidHint.style.display = 'none';
+      installBox.style.display = 'block';
+      installBtn.style.display = 'inline-block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (isStandalone()) return;
+      if (!deferredPrompt) {
+        androidHint.style.display = 'inline';
+        return;
+      }
+      installBtn.disabled = true;
+      deferredPrompt.prompt();
+      try {
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'dismissed') {
+          installBtn.style.display = 'inline-flex';
+          androidHint.style.display = 'inline';
+        } else {
+          installBtn.style.display = 'none';
+        }
+      } finally {
+        deferredPrompt = null;
+        installBtn.disabled = false;
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      hideInstallOffer();
+    });
+
+    displayMode.addEventListener?.('change', () => {
+      if (isStandalone()) hideInstallOffer();
     });
   </script>
   <!-- Top bar -->
@@ -176,6 +233,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
       <nav class="nk-nav">
         <a href="<?= htmlspecialchars($BASE_URL) ?>/index.php" class="nk-link">Domů</a>
         <a href="<?= htmlspecialchars($BASE_URL) ?>/rezervace.php" class="nk-link">Rezervace</a>
+        <button type="button" class="nk-theme-toggle" data-theme-toggle aria-label="Přepnout na tmavý režim" title="Přepnout barevný režim"><span aria-hidden="true">☾</span><span class="nk-theme-toggle__text">Tmavý režim</span></button>
 
         <?php if (empty($hideRocnikDropdown)): ?>
           <?php $returnTo = $_SERVER['REQUEST_URI'] ?? ($BASE_URL.'/index.php'); ?>
@@ -202,8 +260,8 @@ window.addEventListener('beforeinstallprompt', (e) => {
         <?php endif; ?>
         <?php
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
-if (!empty($_SESSION['username']) && $_SESSION['username'] === 'beran') {
-    echo '<li><a href="/liga-app/admin/index.php">Administrace</a></li>';
+if (($_SESSION['role'] ?? '') === 'admin') {
+    echo '<a class="nk-admin-link" href="/liga-app/admin/index.php">Admin</a>';
 }
 // (máš-li Bootstrap, klidně to obal do <li class="nav-item"><a class="nav-link" ...>…</a></li>)
 ?>

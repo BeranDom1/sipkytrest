@@ -10,6 +10,7 @@ if ($BASE_URL === '') $BASE_URL = '/';
 
 require __DIR__.'/db.php';
 require __DIR__.'/security/csrf.php';
+require_once __DIR__.'/common.php';
 
 // ---- práva: editor nebo admin ----
 $role    = $_SESSION['role'] ?? 'viewer';
@@ -49,6 +50,11 @@ $b         = (int)($_POST['b'] ?? 0);
 if ($rocnik_id<=0 || $liga_id<=0 || $a<=0 || $b<=0 || $a === $b) {
     http_response_code(400);
     exit('Chybné vstupy.');
+}
+
+if (!_season_can_edit_matches($conn, $rocnik_id, $role)) {
+    http_response_code(403);
+    exit('Tato sezóna je uzavřená nebo nemáte právo ji upravovat.');
 }
 
 // kanonické pořadí hráčů (menší id první – stejné jako v rozpisu)

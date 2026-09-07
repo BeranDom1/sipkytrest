@@ -78,6 +78,8 @@ table{width:100%;border-collapse:collapse}
 th,td{border-bottom:1px solid #eef2f7;padding:.35rem .5rem}
 .flex{display:flex;gap:.5rem}
 </style>
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>
 <div class="card">

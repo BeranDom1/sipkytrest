@@ -7,9 +7,9 @@ if ($_SERVER['REQUEST_METHOD']!=='POST' || !csrf_check($_POST['csrf'] ?? '')) { 
 $rocnik_id = (int)($_POST['rocnik_id'] ?? 0);
 if ($rocnik_id<=0) { header('Location: /liga-app/admin/index.php'); exit; }
 
-$row = $conn->query("SELECT locked FROM rocniky WHERE id={$rocnik_id}")->fetch_assoc();
+$row = $conn->query("SELECT locked, stav FROM rocniky WHERE id={$rocnik_id}")->fetch_assoc();
 if (!$row) { http_response_code(404); exit('Sezóna nenalezena'); }
-if ((int)$row['locked'] === 1) { http_response_code(403); exit('Sezóna je uzamčena – uložení zakázáno'); }
+if ((int)$row['locked'] === 1 || $row['stav'] !== 'priprava') { http_response_code(403); exit('Měnit lze pouze sezónu ve stavu Příprava.'); }
 
 $conn->begin_transaction();
 try {

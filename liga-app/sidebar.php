@@ -99,15 +99,20 @@ $st->close();
     $logoUrl = $liga['logo']
         ? $base . '/sponzor/' . $liga['logo']
         : null;
+    $logoNeedsBlend = in_array(strtolower((string)$liga['logo']), [
+        'fpnet.png', 'podzimek.jpg', 'podzimek.png', 'sypstav.png'
+    ], true);
 ?>
 
     <!-- Nadpis ligy -->
     <li class="nav-item mb-1">
       <div class="sidebar-league d-flex align-items-center ps-1">
         <?php if ($logoUrl): ?>
-          <img class="league-logo"
-               src="<?= htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8') ?>"
-               alt="<?= htmlspecialchars($liga['alt'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+          <span class="league-logo-frame">
+            <img class="league-logo<?= $logoNeedsBlend ? ' league-logo--blend' : '' ?>"
+                 src="<?= htmlspecialchars($logoUrl, ENT_QUOTES, 'UTF-8') ?>"
+                 alt="<?= htmlspecialchars($liga['alt'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+          </span>
         <?php endif; ?>
         <strong class="league-name">
           <?= htmlspecialchars($liga['nazev'], ENT_QUOTES, 'UTF-8') ?>

@@ -1,0 +1,64 @@
+:root {
+  --admin-primary: #1677b8;
+  --admin-primary-dark: #0d527f;
+  --admin-bg: #f3f7fa;
+  --admin-surface: #ffffff;
+  --admin-text: #17212b;
+  --admin-muted: #657483;
+  --admin-border: #d9e2e9;
+  --admin-danger: #b42332;
+  --admin-success: #18794e;
+  --admin-radius: 16px;
+  --admin-shadow: 0 10px 30px rgba(24, 54, 75, .08);
+}
+* { box-sizing: border-box; }
+body.admin-body { margin: 0; background: var(--admin-bg); color: var(--admin-text); font: 16px/1.5 system-ui, sans-serif; }
+.admin-shell { width: min(1180px, 100%); margin: 0 auto; padding: 16px; }
+.admin-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.admin-top a { color: var(--admin-primary-dark); text-decoration: none; font-weight: 700; }
+.admin-title { margin: 0; font-size: clamp(1.65rem, 6vw, 2.5rem); line-height: 1.1; }
+.admin-subtitle { color: var(--admin-muted); margin: 8px 0 20px; }
+.admin-grid { display: grid; gap: 14px; }
+.admin-grid--stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.admin-card { background: var(--admin-surface); border: 1px solid var(--admin-border); border-radius: var(--admin-radius); box-shadow: var(--admin-shadow); padding: 16px; }
+.admin-card h2, .admin-card h3 { margin-top: 0; }
+.admin-stat strong { display: block; font-size: 1.8rem; }
+.admin-stat span { color: var(--admin-muted); font-size: .9rem; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.admin-btn { appearance: none; display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--admin-primary); border-radius: 12px; padding: 10px 15px; background: var(--admin-primary); color: #fff; font: inherit; font-weight: 750; text-decoration: none; cursor: pointer; }
+.admin-btn:hover { background: var(--admin-primary-dark); }
+.admin-btn--secondary { background: #fff; color: var(--admin-primary-dark); border-color: var(--admin-border); }
+.admin-btn--danger { background: #fff; color: var(--admin-danger); border-color: #efb6bd; }
+.admin-btn[disabled] { opacity: .5; cursor: not-allowed; }
+.admin-field { display: grid; gap: 6px; margin-bottom: 14px; }
+.admin-field label { font-weight: 700; }
+.admin-field input, .admin-field select { width: 100%; min-height: 46px; border: 1px solid var(--admin-border); border-radius: 11px; padding: 10px 12px; background: #fff; color: var(--admin-text); font: inherit; }
+.admin-alert { border: 1px solid #b9d7eb; border-radius: 12px; padding: 12px 14px; margin: 12px 0; background: #edf7fd; }
+.admin-alert--danger { border-color: #efb6bd; background: #fff1f2; color: #841b28; }
+.admin-alert--success { border-color: #a9dbc7; background: #ecf9f3; color: #11623e; }
+.admin-badge { display: inline-flex; border-radius: 999px; padding: 4px 9px; background: #e7f2f9; color: var(--admin-primary-dark); font-size: .78rem; font-weight: 800; }
+.admin-badge--aktivni { background: #dff5e9; color: #11623e; }
+.admin-badge--archivni { background: #edf0f2; color: #53616d; }
+.admin-list { display: grid; gap: 12px; }
+.admin-season { display: grid; gap: 12px; border-bottom: 1px solid var(--admin-border); padding-bottom: 14px; }
+.admin-season:last-child { border-bottom: 0; padding-bottom: 0; }
+.admin-season__meta { color: var(--admin-muted); }
+.admin-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.admin-table { width: 100%; border-collapse: collapse; }
+.admin-table th, .admin-table td { padding: 11px 9px; border-bottom: 1px solid var(--admin-border); text-align: left; }
+.admin-player-row { display: grid; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--admin-border); }
+.admin-player-row strong { overflow-wrap: anywhere; }
+.admin-player-row select { min-height: 44px; border: 1px solid var(--admin-border); border-radius: 10px; padding: 8px; background: #fff; font: inherit; }
+.admin-league-grid { display: grid; gap: 14px; }
+.admin-player-list { margin: 0; padding-left: 20px; }
+.admin-check { display: flex; gap: 8px; align-items: flex-start; }
+.admin-check--bad { color: var(--admin-danger); }
+.admin-check--ok { color: var(--admin-success); }
+@media (min-width: 720px) {
+  .admin-shell { padding: 28px; }
+  .admin-grid--stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .admin-grid--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-season { grid-template-columns: 1fr auto; align-items: center; }
+  .admin-player-row { grid-template-columns: minmax(220px, 1fr) minmax(220px, 320px); align-items: center; }
+  .admin-league-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

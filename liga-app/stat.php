@@ -121,7 +121,8 @@ $stmt->close();
 <main id="content" class="nk-content nk-content--flat">
   <h2><?= htmlspecialchars($nadpis) ?></h2>
 
-  <div class="table-wrap">
+  <p class="league-stats-hint">Tabulku lze posunout do strany.</p>
+  <div class="table-wrap league-stats-wrap">
     <table class="table table--stats">
       <thead>
         <tr>

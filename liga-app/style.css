@@ -254,3 +254,11 @@ a:hover {
 /* —————————————————————————————————————————————————————————————
    KONEC style.css
    ————————————————————————————————————————————————————————————— */
+@import url('/liga-app/assets/admin.css?v=1');
+
+body:not(.admin-body) {
+  margin: 0;
+  background: #f3f7fa;
+  color: #17212b;
+  font-family: Inter, system-ui, sans-serif;
+}

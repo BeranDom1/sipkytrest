@@ -130,6 +130,8 @@ th{background:#f4f4f4}
 .btn.gray{background:#444}
 form.inline{display:inline}
 </style>
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>
 

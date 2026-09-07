@@ -6,9 +6,28 @@ function _active_rocnik_id(mysqli $conn): int {
     if (isset($_SESSION['rocnik_id']) && (int)$_SESSION['rocnik_id'] > 0) {
         return (int)$_SESSION['rocnik_id'];
     }
+    $res = $conn->query("SELECT id FROM rocniky WHERE stav='aktivni' ORDER BY id DESC LIMIT 1");
+    $row = $res ? $res->fetch_assoc() : null;
+    if ($row) return (int)$row['id'];
     $res = $conn->query("SELECT MAX(id) AS mx FROM rocniky");
     $row = $res ? $res->fetch_assoc() : ['mx' => 1];
     return (int)($row['mx'] ?? 1);
+}
+
+function _season_status(mysqli $conn, int $rocnik_id): string {
+    $st = $conn->prepare('SELECT stav FROM rocniky WHERE id=?');
+    $st->bind_param('i', $rocnik_id);
+    $st->execute();
+    $row = $st->get_result()->fetch_assoc();
+    $st->close();
+    return (string)($row['stav'] ?? 'archivni');
+}
+
+function _season_can_edit_matches(mysqli $conn, int $rocnik_id, string $role): bool {
+    $status = _season_status($conn, $rocnik_id);
+    if ($status === 'archivni') return false;
+    if ($status === 'priprava') return $role === 'admin';
+    return in_array($role, ['admin', 'stat_editor'], true);
 }
 
 // Přeloží číslo ligy (0..5) na skutečné ligy.id
