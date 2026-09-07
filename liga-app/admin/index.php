@@ -1,193 +1,43 @@
 <?php
-require_once __DIR__.'/../db.php';
-require_once __DIR__.'/_auth.php';
-require_once __DIR__.'/../security/csrf.php';
+require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/season_helpers.php';
 
-$sezony = $conn->query(
-  "SELECT id, nazev, locked FROM rocniky ORDER BY id DESC"
-)->fetch_all(MYSQLI_ASSOC);
-
-// výchozí ročník = nejnovější neuzamčený
-$default_id = null;
-foreach ($sezony as $s) {
-  if ((int)$s['locked'] === 0) {
-    $default_id = (int)$s['id'];
-    break;
-  }
+$active = $conn->query("SELECT id, nazev FROM rocniky WHERE stav = 'aktivni' ORDER BY id DESC LIMIT 1")->fetch_assoc();
+if (!$active) {
+    $active = $conn->query('SELECT id, nazev FROM rocniky ORDER BY id DESC LIMIT 1')->fetch_assoc();
 }
-if (!$default_id && $sezony) {
-  $default_id = (int)$sezony[0]['id'];
+$activeId = (int)($active['id'] ?? 0);
+$stats = ['leagues' => 0, 'players' => 0, 'matches' => 0, 'played' => 0];
+if ($activeId > 0) {
+    $stmt = $conn->prepare(
+        'SELECT
+          (SELECT COUNT(DISTINCT liga_id) FROM hraci_v_sezone WHERE rocnik_id = ?) leagues,
+          (SELECT COUNT(*) FROM hraci_v_sezone WHERE rocnik_id = ?) players,
+          (SELECT COUNT(*) FROM zapasy WHERE rocnik_id = ?) matches,
+          (SELECT COUNT(*) FROM zapasy WHERE rocnik_id = ? AND skore1 IS NOT NULL AND skore2 IS NOT NULL) played'
+    );
+    $stmt->bind_param('iiii', $activeId, $activeId, $activeId, $activeId);
+    $stmt->execute();
+    $stats = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 }
 ?>
-<!doctype html>
-<html lang="cs">
-<head>
-<meta charset="utf-8">
-<title>Administrace</title>
-<link rel="stylesheet" href="/liga-app/style.css">
-<style>
-.card{
-  border:1px solid #ddd;
-  padding:1.2rem;
-  border-radius:12px;
-  max-width:820px;
-  margin:2rem auto;
-  background:#fff
-}
-.btn{
-  padding:.5rem .9rem;
-  border-radius:10px;
-  border:1px solid #333;
-  background:#111;
-  color:#fff;
-  cursor:pointer;
-  text-decoration:none;
-  display:inline-block
-}
-.btn.secondary{
-  background:#444;
-}
-.btn.green{
-  background:#0a7b12;
-  border-color:#0a7b12;
-}
-select{padding:.35rem .5rem}
-hr{margin:1.8rem 0}
-</style>
-</head>
-<body>
-
-<div class="card">
-
-<h1>Administrace</h1>
-<p>Centrální správa lig, hráčů a turnajů. Práce je vždy vázaná na konkrétní ročník.</p>
-
-<!-- ======================= ROZŘAZENÍ ======================= -->
-<h2>Rozřazení hráčů do lig</h2>
-<p>Otevře rozřazení hráčů pro vybraný ročník (0.–5. liga).</p>
-
-<form action="/liga-app/admin/rozrazeni.php" method="get"
-      style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-  <label for="rocnik">Sezóna:</label>
-  <select id="rocnik" name="rocnik_id" required>
-    <?php foreach($sezony as $s): ?>
-      <option value="<?= (int)$s['id'] ?>"
-        <?= $s['id']==$default_id?'selected':''; ?>>
-        <?= htmlspecialchars($s['nazev']) ?>
-        <?= (int)$s['locked'] ? ' (uzamčeno)' : '' ?>
-      </option>
-    <?php endforeach; ?>
-  </select>
-  <button class="btn">Otevřít rozřazení</button>
-</form>
-
-<!-- ======================= LIGY ======================= -->
-<hr>
-
-<h2>Správa lig</h2>
-<p>Názvy a loga lig jsou vázané na konkrétní ročník.</p>
-
-<p style="display:flex;gap:.6rem;flex-wrap:wrap">
-  <a class="btn secondary" href="/liga-app/admin/ligy_nazvy.php">
-    🏷️ Názvy lig (podle ročníku)
-  </a>
-
-  <a class="btn secondary" href="/liga-app/admin/ligy_loga.php">
-    🖼️ Loga lig (podle ročníku)
-  </a>
-</p>
-
-<!-- ======================= HRÁČI ======================= -->
-<hr>
-
-<h2>Hráči</h2>
-<p>Správa databáze hráčů (přidání nových hráčů).</p>
-
-<p>
-  <a class="btn" href="/liga-app/admin/hraci.php">
-    Správa hráčů
-  </a>
-</p>
-
-<!-- ======================= TURNAJE ======================= -->
-<hr>
-
-<h2>Turnaje</h2>
-<p>Správa pohárových turnajů pro vybraný ročník.</p>
-
-<p style="display:flex;gap:.6rem;flex-wrap:wrap">
-  <a class="btn green" href="/liga-app/pohar/turnaj-vytvorit.php">
-    🏆 Vytvořit turnaj
-  </a>
-</p>
-
-<?php
-// seznam turnajů pro výchozí ročník
-$stmt = $conn->prepare("
-  SELECT id, nazev, created_at
-  FROM turnaje
-  WHERE rocnik_id = ?
-  ORDER BY created_at DESC
-");
-$stmt->bind_param("i", $default_id);
-$stmt->execute();
-$turnaje = $stmt->get_result();
-?>
-
-<?php if ($turnaje->num_rows): ?>
-  <div style="margin-top:1rem">
-    <table style="width:100%;border-collapse:collapse">
-      <thead>
-        <tr style="background:#f3f3f3">
-          <th style="text-align:left;padding:.4rem">Název</th>
-          <th style="padding:.4rem">Akce</th>
-        </tr>
-      </thead>
-      <tbody>
-      <?php while ($t = $turnaje->fetch_assoc()): ?>
-        <tr>
-          <td style="padding:.4rem">
-            <?= htmlspecialchars($t['nazev']) ?>
-          </td>
-          <td style="padding:.4rem;text-align:center">
-            <a class="btn secondary"
-               href="/liga-app/pohar/pohar_turnaj.php?id=<?= (int)$t['id'] ?>">
-              Náhled
-            </a>
-            <a class="btn"
-               href="/liga-app/pohar/pohar_1kolo_admin.php?id=<?= (int)$t['id'] ?>">
-              Správa 1. kola
-            </a>
-          </td>
-        </tr>
-      <?php endwhile; ?>
-      </tbody>
-    </table>
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <script src="/liga-app/assets/admin-theme.js?v=1"></script>
+<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administrace</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=1"></head>
+<body class="admin-body"><main class="admin-shell">
+  <div class="admin-top"><a href="/liga-app/index.php">← Veřejná část</a><a href="/liga-app/logout.php">Odhlásit</a></div>
+  <h1 class="admin-title">Administrace</h1><p class="admin-subtitle">Aktivní sezóna: <strong><?= htmlspecialchars($active['nazev'] ?? 'není nastavena') ?></strong></p>
+  <section class="admin-grid admin-grid--stats">
+    <div class="admin-card admin-stat"><strong><?= (int)$stats['leagues'] ?></strong><span>lig</span></div>
+    <div class="admin-card admin-stat"><strong><?= (int)$stats['players'] ?></strong><span>hráčů</span></div>
+    <div class="admin-card admin-stat"><strong><?= (int)$stats['matches'] ?></strong><span>zápasů</span></div>
+    <div class="admin-card admin-stat"><strong><?= (int)$stats['played'] ?></strong><span>odehráno</span></div>
+  </section>
+  <section class="admin-card" style="margin-top:14px"><h2>Sezóny a soutěž</h2><div class="admin-actions"><a class="admin-btn" href="/liga-app/admin/sezony.php">Nová sezóna / správa sezón</a><?php if ($activeId): ?><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/sezona.php?rocnik_id=<?= $activeId ?>">Rozřazení hráčů</a><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/rozpis_sezony.php?rocnik_id=<?= $activeId ?>">Kontrola rozpisu</a><?php endif; ?></div></section>
+  <div class="admin-grid admin-grid--two" style="margin-top:14px">
+    <section class="admin-card"><h2>Hráči a ligy</h2><div class="admin-actions"><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/hraci.php">Databáze hráčů</a><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/ligy_nazvy.php">Názvy lig</a><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/ligy_loga.php">Loga lig</a></div></section>
+    <section class="admin-card"><h2>Výsledky a turnaje</h2><div class="admin-actions"><a class="admin-btn admin-btn--secondary" href="/liga-app/rozpisy/1rozpis.php">Zapsat výsledek</a><a class="admin-btn admin-btn--secondary" href="/liga-app/pohar/turnaj-vytvorit.php">Vytvořit turnaj</a><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/create_user.php">Uživatelé</a></div></section>
   </div>
-<?php else: ?>
-  <p style="color:#666;margin-top:.6rem">
-    Pro tento ročník zatím není vytvořen žádný turnaj.
-  </p>
-<?php endif; ?>
-<hr>
-<li>
-  <a href="/liga-app/admin/create_user.php">
-    ➕ Vytvořit uživatele
-  </a>
-</li>
-
-
-
-
-
-<script>
-function ppFillDefaults(){
-  var sel = document.getElementById('pp_rocnik');
-  var txt = sel.options[sel.selectedIndex].text;
-  document.getElementById('pp_nazev').value =
-    'Prezidentský pohár ' + txt;
-}
-</script>
-
-</body>
-</html>
+</main></body></html>

@@ -48,7 +48,7 @@ $rocnik_id   = (int)$z['rocnik_id'];
 $liga_cislo  = isset($z['liga_cislo']) ? (int)$z['liga_cislo'] : $liga_id; // fallback
 
 // ===== 3) Práva a edit mód =====
-$isEditor = in_array($_SESSION['role'] ?? '', ['admin','stat_editor'], true);
+$isEditor = _season_can_edit_matches($conn, $rocnik_id, $_SESSION['role'] ?? '');
 $editMode = $isEditor && (($_GET['edit'] ?? '0') === '1');
 
 // ===== 4) Bezpečné výstupy / helpery =====
@@ -59,7 +59,7 @@ $rocnik= $rocnik_id;
 function nf($v){ return number_format((float)$v, 2, ',', ''); }
 function iv($v){ return (int)$v; }
 ?>
-<main id="content" class="nk-content nk-content--flat">
+<section class="match-detail">
 <style>
   .match-meta{color:#6b7280;margin:.25rem 0 1rem}
   .match-actions{margin:.5rem 0 1rem;display:flex;gap:.5rem}
@@ -214,7 +214,7 @@ function iv($v){ return (int)$v; }
 
 </style>
 
-  <h1><?= $h1 ?> vs. <?= $h2 ?></h1>
+  <h1 class="match-heading"><span><?= $h1 ?></span><small>vs.</small><span><?= $h2 ?></span></h1>
   <div class="match-meta">
     Datum: <?= $datum ?>
   | <?= htmlspecialchars(_liga_name($conn, $liga_id, $rocnik_id)) ?>
@@ -231,17 +231,19 @@ function iv($v){ return (int)$v; }
     </div>
   <?php endif; ?>
 
-  <div class="table-wrap">
+  <?php if ($editMode): ?>
+  <form method="post" action="<?= htmlspecialchars($BASE_URL) ?>/save_stats.php">
+    <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'] ?? '') ?>">
+    <input type="hidden" name="match_id" value="<?= $matchId ?>">
+  <?php endif; ?>
+  <div class="table-wrap match-table-wrap">
     <table class="table match-table<?= $editMode ? ' is-edit' : '' ?>">
       <colgroup>
         <col class="label"><col class="score"><col class="sep"><col class="score">
       </colgroup>
+      <thead><tr><th>Statistika</th><th><?= $h1 ?></th><th></th><th><?= $h2 ?></th></tr></thead>
       <tbody>
         <?php if ($editMode): ?>
-          <form method="post" action="<?= htmlspecialchars($BASE_URL) ?>/save_stats.php">
-            <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'] ?? '') ?>">
-            <input type="hidden" name="match_id" value="<?= $matchId ?>">
-
           <tr class="row-date">
   <td>Datum</td>
   <!-- přes VŠECHNY pravé sloupce: 2. + 3. (sep) + 4. -->
@@ -309,7 +311,6 @@ function iv($v){ return (int)$v; }
                 <button type="submit" class="btn">Uložit</button>
               </td>
             </tr>
-          </form>
         <?php else: ?>
           <tr>
             <td>Skóre</td>
@@ -363,7 +364,8 @@ function iv($v){ return (int)$v; }
       </tbody>
     </table>
   </div>
-</main>
+  <?php if ($editMode): ?></form><?php endif; ?>
+</section>
 <?php require __DIR__ . '/footer.php'; ?>
 <style>
 /* ===== MOBILE ≤640px – zrušit colgroup, 1. sloupec na znaky, čísla co nejmenší ===== */
@@ -432,4 +434,55 @@ function iv($v){ return (int)$v; }
   }
 }
 
+</style>
+
+<style>
+/* Final responsive match-detail layout. */
+
+/* Desktop: keep both player value columns exactly the same width. */
+@media (min-width:641px){
+  .match-table thead th:first-child{width:40%!important}
+  .match-table thead th:nth-child(2),
+  .match-table thead th:nth-child(4){width:calc((60% - 1.5rem)/2)!important}
+  .match-table.is-edit td:nth-child(2) input[type=number],
+  .match-table.is-edit td:nth-child(4) input[type=number]{width:100%!important;max-width:none!important}
+}
+
+.match-detail{width:100%;min-width:0}
+.match-heading{
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center;gap:12px;margin:0 0 10px;text-align:center;
+  font-size:clamp(1.35rem,4vw,2rem);line-height:1.2
+}
+.match-heading span{min-width:0;overflow-wrap:anywhere}
+.match-heading small{color:var(--nk-muted);font-size:.55em;font-weight:600}
+.match-table-wrap{width:100%;max-width:none}
+.match-table thead{display:table-header-group}
+.match-table thead th{text-transform:none;letter-spacing:0;text-align:center}
+.match-table thead th:first-child{text-align:left}
+.match-table thead th:nth-child(3){width:0;padding:0}
+
+@media (max-width:640px){
+  .match-detail{padding-top:2px}
+  .match-heading{grid-template-columns:1fr;gap:2px;text-align:left;font-size:1.4rem}
+  .match-heading small{display:none}
+  .match-meta{font-size:.9rem;line-height:1.45;margin:8px 0 12px}
+  .match-actions{margin:8px 0 12px}
+  .match-table-wrap{overflow:visible!important;border-radius:14px}
+  .table-wrap>table.match-table,
+  .match-table{display:table!important;width:100%!important;min-width:0!important;table-layout:fixed!important}
+  .match-table col.label{width:38%!important}
+  .match-table col.score{width:31%!important}
+  .match-table col.sep{width:0!important}
+  .match-table thead th{padding:9px 6px!important;font-size:.72rem;line-height:1.15;overflow-wrap:anywhere}
+  .match-table thead th:nth-child(3),
+  .match-table tr>td:nth-child(3){display:none!important}
+  .table.match-table tr>td:nth-child(1){width:38%!important;max-width:none!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;font-size:.84rem!important;padding:9px 7px!important}
+  .table.match-table tr>td:nth-child(2),
+  .table.match-table tr>td:nth-child(4){width:31%!important;min-width:0!important;padding:8px 5px!important;border-left:1px solid var(--nk-border)}
+  .table.match-table.is-edit input[type="number"]{width:100%!important;max-width:72px!important;min-height:42px;padding:7px 4px!important}
+  .match-table.is-edit .date-cell{width:62%!important;padding:7px!important}
+  .match-table.is-edit .date-cell .date-input{width:100%!important;max-width:none!important;min-height:42px}
+  .match-table .btn{min-height:40px;padding:7px 10px}
+}
 </style>

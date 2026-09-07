@@ -7,8 +7,8 @@ $csrfRozpis = csrf_token();
 $liga_id   = _safe_liga_id();
 $rocnik_id = _active_rocnik_id($conn);
 
-// --- kdo může upravovat ---
-$canEdit = in_array($_SESSION['role'] ?? '', ['admin','stat_editor'], true);
+// Editace historických sezón je vždy zakázaná; přípravu smí měnit jen admin.
+$canEdit = _season_can_edit_matches($conn, $rocnik_id, (string)($_SESSION['role'] ?? ''));
 
 /** ------------------------------------------------------------------
  *  1) Hráči v dané lize/ročníku (id => jméno), řazeno podle jména
@@ -51,6 +51,8 @@ function rr_schedule(array $ids): array {
             if ($a !== 0 && $b !== 0) {
                 if ($a > $b) { $t=$a; $a=$b; $b=$t; }
                 $pairs[] = [$a, $b];
+            } elseif ($a !== 0 || $b !== 0) {
+                $pairs[] = [$a ?: $b, 0];
             }
         }
         $rounds[] = $pairs;
@@ -111,8 +113,9 @@ $nadpis = 'Rozpis – '._liga_name($conn, $liga_id).' – '._rocnik_name($conn, 
           </thead>
           <tbody>
             <?php foreach ($pairs as [$a,$b]):
+                $isBye = $b === 0;
                 $k = "$a-$b";
-                $m = $matchMap[$k] ?? null;
+                $m = $isBye ? null : ($matchMap[$k] ?? null);
 
                 // necháme původní hodnoty (mohou být NULL)
                 $s1 = $m['skore1'] ?? null;
@@ -127,10 +130,12 @@ $nadpis = 'Rozpis – '._liga_name($conn, $liga_id).' – '._rocnik_name($conn, 
                   <?= $hasScore ? (((int)$s1).' : '.((int)$s2)) : '—' ?>
                 </td>
                 <td data-label="Hráč 2" style="text-align:right">
-                  <?= htmlspecialchars($players[$b] ?? ('#'.$b)) ?>
+                  <?= $isBye ? '<strong>VOLNO</strong>' : htmlspecialchars($players[$b] ?? ('#'.$b)) ?>
                 </td>
                 <td data-label="Detail" style="text-align:center">
-                  <?php if ($m): ?>
+                  <?php if ($isBye): ?>
+                    <span class="badge">Volné kolo</span>
+                  <?php elseif ($m): ?>
                     <?php if (!$hasScore && $canEdit): ?>
                       <a href="<?= htmlspecialchars($BASE_URL) ?>/zapas.php?id=<?= (int)$m['id'] ?>&edit=1">Zadat výsledek</a>
                     <?php else: ?>

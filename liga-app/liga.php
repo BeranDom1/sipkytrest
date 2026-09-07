@@ -92,7 +92,7 @@ $nadpis = _liga_name($conn, $liga_id) . ' – ' . _rocnik_name($conn, $rocnik_id
 ?>
 <main id="content" class="nk-content nk-content--flat">
   <h2><?= htmlspecialchars($nadpis) ?></h2>
-  <div class="table-wrap">
+  <div class="table-wrap league-table-wrap">
     <table class="table table--league">
       <thead><tr>
         <th>Poř.</th><th>Hráč</th><th>Z</th><th>V</th><th>P</th><th>RZD</th><th>B</th>

@@ -6,10 +6,10 @@ require_once __DIR__.'/../security/csrf.php';
 $rocnik_id = (int)($_GET['rocnik_id'] ?? 0);
 if ($rocnik_id<=0) { header('Location: /liga-app/admin/index.php'); exit; }
 
-$lockRow = $conn->query("SELECT nazev, locked FROM rocniky WHERE id={$rocnik_id}")->fetch_assoc();
+$lockRow = $conn->query("SELECT nazev, locked, stav FROM rocniky WHERE id={$rocnik_id}")->fetch_assoc();
 if (!$lockRow) { header('Location: /liga-app/admin/index.php'); exit; }
 $sezona_nazev = $lockRow['nazev'];
-$locked = (int)$lockRow['locked'] === 1;
+$locked = (int)$lockRow['locked'] === 1 || $lockRow['stav'] !== 'priprava';
 
 $ligy = [];
 $st = $conn->prepare("
@@ -53,6 +53,8 @@ $csrf = csrf_token();
 <!doctype html><meta charset="utf-8">
 <title>Rozřazení – <?= htmlspecialchars($sezona_nazev) ?></title>
 <link rel="stylesheet" href="/liga-app/style.css">
+<link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+<script src="/liga-app/assets/admin-theme.js?v=1"></script>
 <style>
 .grid{display:grid;grid-template-columns:repeat(3,minmax(260px,1fr));gap:12px}
 @media (max-width:900px){.grid{grid-template-columns:1fr}}

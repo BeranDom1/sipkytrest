@@ -1,8 +1,17 @@
 <?php
 require __DIR__ . '/../header.php';
 require __DIR__ . '/../db.php';
+require_once __DIR__ . '/_auth.php';
+require_once __DIR__ . '/../security/csrf.php';
 
 $rocnik_id = (int)($_SESSION['rocnik_id'] ?? 0);
+$seasonStmt = $conn->prepare('SELECT stav FROM rocniky WHERE id = ?');
+$seasonStmt->bind_param('i', $rocnik_id);
+$seasonStmt->execute();
+$season = $seasonStmt->get_result()->fetch_assoc();
+$seasonStmt->close();
+$editable = $season && $season['stav'] === 'priprava';
+$csrf = csrf_token();
 
 // ligy + NAZVY PRO ROČNÍK
 $sql = "
@@ -35,6 +44,7 @@ $sponsorFiles = array_values(array_filter(
 ?>
 
 <h1>Správa log lig – ročník <?= $rocnik_id ?></h1>
+<?php if (!$editable): ?><div class="alert alert-warning">Loga lze měnit pouze u sezóny ve stavu Příprava.</div><?php endif; ?>
 
 <table class="table table-dark table-striped align-middle">
 <thead>
@@ -51,6 +61,7 @@ $sponsorFiles = array_values(array_filter(
 <?php foreach ($ligy as $liga): ?>
 <tr>
 <form method="post" action="ulozit_logo.php">
+  <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>">
   <td>
     <?= htmlspecialchars($liga['cislo'] . '. ' . $liga['nazev']) ?>
     <input type="hidden" name="liga_id" value="<?= $liga['liga_id'] ?>">
@@ -85,7 +96,7 @@ $sponsorFiles = array_values(array_filter(
   </td>
 
   <td>
-    <button class="btn btn-sm btn-warning">Uložit</button>
+    <button class="btn btn-sm btn-warning" <?= $editable ? '' : 'disabled' ?>>Uložit</button>
   </td>
 </form>
 </tr>

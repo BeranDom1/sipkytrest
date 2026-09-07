@@ -3,6 +3,7 @@
 
 session_start();
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/common.php';
 
 // 1) Povolit jen POST a roli admin/stat_editor
 if (
@@ -22,6 +23,16 @@ if (!hash_equals($_SESSION['csrf'] ?? '', $csrf)) {
 
 // 2) Načíst ID zápasu a hodnoty
 $matchId = (int)($_POST['match_id'] ?? 0);
+
+$seasonStmt = $conn->prepare('SELECT rocnik_id FROM zapasy WHERE id = ? LIMIT 1');
+$seasonStmt->bind_param('i', $matchId);
+$seasonStmt->execute();
+$matchSeason = (int)($seasonStmt->get_result()->fetch_assoc()['rocnik_id'] ?? 0);
+$seasonStmt->close();
+if ($matchSeason <= 0 || !_season_can_edit_matches($conn, $matchSeason, (string)($_SESSION['role'] ?? ''))) {
+  http_response_code(403);
+  exit('Tato sezóna je uzavřená nebo nemáte právo ji upravovat.');
+}
 
 // --- DATUM: prázdné = NULL, podporuj i DD.MM.RRRR ---
 $datum_raw = trim((string)($_POST['datum'] ?? ''));

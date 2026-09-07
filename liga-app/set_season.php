@@ -42,11 +42,16 @@ if ($rocnik_id > 0 && ($st = $conn->prepare('SELECT id FROM rocniky WHERE id=?')
     if ($st->fetch()) $ok_id = (int)$found;
     $st->close();
 }
-// fallback: vezmi nejvyšší dostupný
+// fallback: vezmi aktivní sezónu, teprve potom nejvyšší dostupnou
 if ($ok_id <= 0) {
-    $res = $conn->query('SELECT MAX(id) AS mx FROM rocniky');
+    $res = $conn->query("SELECT id AS mx FROM rocniky WHERE stav='aktivni' ORDER BY id DESC LIMIT 1");
     $row = $res ? $res->fetch_assoc() : null;
-    $ok_id = (int)($row['mx'] ?? 1);
+    $ok_id = (int)($row['mx'] ?? 0);
+    if ($ok_id <= 0) {
+        $res = $conn->query('SELECT MAX(id) AS mx FROM rocniky');
+        $row = $res ? $res->fetch_assoc() : null;
+        $ok_id = (int)($row['mx'] ?? 1);
+    }
 }
 
 $_SESSION['rocnik_id'] = $ok_id;

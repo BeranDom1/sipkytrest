@@ -73,6 +73,8 @@ input{width:100%;padding:.4rem}
 table{width:100%;border-collapse:collapse;margin-top:1rem}
 th,td{padding:.35rem;border-bottom:1px solid #eee;text-align:left}
 </style>
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>
 

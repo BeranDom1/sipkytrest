@@ -61,6 +61,8 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES,'UTF-8'); }
 select,input[type=text],input[type=number]{padding:.35rem .5rem;border:1px solid #dfe3ea;border-radius:8px}
 .form-row{display:grid;grid-template-columns: 1fr 1fr;gap:.75rem}
 </style>
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>
 <div class="card">

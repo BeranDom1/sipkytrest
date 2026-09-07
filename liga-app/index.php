@@ -22,7 +22,7 @@ function detect_active_season(mysqli $conn): array {
         $st->close();
     }
 
-    $res = $conn->query("SELECT id, nazev FROM rocniky WHERE locked=0 ORDER BY id DESC LIMIT 1");
+    $res = $conn->query("SELECT id, nazev FROM rocniky WHERE stav='aktivni' ORDER BY id DESC LIMIT 1");
     if ($r = $res->fetch_assoc()) return ['id' => (int)$r['id'], 'nazev' => $r['nazev']];
 
     $res = $conn->query("SELECT id, nazev FROM rocniky ORDER BY id DESC LIMIT 1");

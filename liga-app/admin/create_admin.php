@@ -70,6 +70,8 @@ input{width:100%;padding:.5rem}
 .msg{margin-top:1rem;color:#0a0}
 .err{margin-top:1rem;color:#c00}
 </style>
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>
 <div class="box">

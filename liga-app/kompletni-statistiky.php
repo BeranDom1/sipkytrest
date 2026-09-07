@@ -120,13 +120,17 @@ $rows = [];
 while ($r = $res->fetch_assoc()) $rows[] = $r;
 $stmt->close();
 
-// Pomocný převod čísla ligy (z l.cislo) na text "X. liga"
-function liga_label_from_cislo(int $cislo){ return $cislo.'. '; }
+// Liga s interním ID/číslem 6 je historicky ženská liga, nikoli šestá liga.
+function liga_label(int $ligaId, int $cislo): string
+{
+  return $ligaId === 6 ? 'Ženy' : $cislo . '.';
+}
 ?>
 <main id="content" class="nk-content nk-content--flat">
   <h2><?= htmlspecialchars($nadpis) ?></h2>
 
-  <div class="table-wrap">
+  <p class="complete-stats-hint">Tabulku lze posunout do strany.</p>
+  <div class="table-wrap complete-stats-wrap">
     <table class="table table--stats table--sortable" data-default-sort="prumer" data-default-order="desc">
       <thead>
         <tr>
@@ -144,7 +148,7 @@ function liga_label_from_cislo(int $cislo){ return $cislo.'. '; }
           <tr>
             <td><?= $i++ ?>.</td>
             <td><?= htmlspecialchars($r['jmeno']) ?></td>
-            <td><?= htmlspecialchars(liga_label_from_cislo((int)$r['liga_cislo'])) ?></td>
+            <td><?= htmlspecialchars(liga_label((int)$r['liga_id'], (int)$r['liga_cislo'])) ?></td>
             <td style="text-align:center"><?= (int)($r['zapasy'] ?? 0) ?></td>
             <td style="text-align:center"><?= is_null($r['prumer']) ? '—' : number_format((float)$r['prumer'], 2, ',', ' ') ?></td>
             <td style="text-align:center"><?= is_null($r['nejvyssi_zavreni']) ? '—' : (int)$r['nejvyssi_zavreni'] ?></td>

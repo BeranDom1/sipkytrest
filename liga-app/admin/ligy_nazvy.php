@@ -12,6 +12,12 @@ $rocniky = $conn->query("
 
 // vybraný ročník
 $rocnik_id = isset($_GET['rocnik_id']) ? (int)$_GET['rocnik_id'] : ($rocniky[0]['id'] ?? 0);
+$seasonStmt = $conn->prepare('SELECT stav FROM rocniky WHERE id = ?');
+$seasonStmt->bind_param('i', $rocnik_id);
+$seasonStmt->execute();
+$season = $seasonStmt->get_result()->fetch_assoc();
+$seasonStmt->close();
+$editable = $season && $season['stav'] === 'priprava';
 
 // ligy
 $ligy = $conn->query("
@@ -42,6 +48,9 @@ $err = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (!csrf_check($_POST['csrf'] ?? '')) {
     $err = 'CSRF chyba.';
+  } elseif (!$editable) {
+    http_response_code(403);
+    $err = 'Názvy lig lze měnit pouze u sezóny ve stavu Příprava.';
   } else {
     $del = $conn->prepare("DELETE FROM ligy_nazvy WHERE rocnik_id = ?");
 $del->bind_param('i', $rocnik_id);
@@ -82,6 +91,8 @@ input{width:100%;padding:.4rem}
 .msg{color:#0a0}
 .err{color:#c00}
 </style>
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>
 
