@@ -15,6 +15,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $action = $_POST['action'] ?? '';
     try {
+        if ($action === 'delete') {
+            $seasonId = (int)($_POST['rocnik_id'] ?? 0);
+            admin_delete_draft_season($conn, $seasonId);
+            if ((int)($_SESSION['rocnik_id'] ?? 0) === $seasonId) {
+                unset($_SESSION['rocnik_id']);
+            }
+            $message = 'Sezóna v přípravě byla smazána včetně jejího rozpisu a přiřazení hráčů.';
+        }
         if ($action === 'create') {
             $name = trim((string)($_POST['nazev'] ?? ''));
             $sourceId = (int)($_POST['source_rocnik_id'] ?? 0);
@@ -119,6 +127,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($action === 'activate') {
             $seasonId = (int)($_POST['rocnik_id'] ?? 0);
+            $conn->begin_transaction();
+            $lock = $conn->prepare('SELECT id FROM rocniky WHERE id = ? FOR UPDATE');
+            $lock->bind_param('i', $seasonId);
+            $lock->execute();
+            $lock->get_result()->fetch_assoc();
+            $lock->close();
             $season = admin_season($conn, $seasonId);
             if (!$season || !admin_season_is_editable($season)) {
                 throw new RuntimeException('Aktivovat lze pouze sezónu ve stavu Příprava.');
@@ -157,7 +171,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            $conn->begin_transaction();
             $conn->query("UPDATE rocniky SET stav = 'archivni', locked = 1 WHERE stav = 'aktivni'");
             $activate = $conn->prepare("UPDATE rocniky SET stav = 'aktivni', locked = 0 WHERE id = ?");
             $activate->bind_param('i', $seasonId);
@@ -223,7 +236,15 @@ $csrf = csrf_token();
   <section class="admin-card" style="margin-top:14px"><h2>Existující sezóny</h2><div class="admin-list">
     <?php foreach ($seasons as $season): ?>
       <article class="admin-season"><div><h3><?= htmlspecialchars($season['nazev']) ?> <span class="admin-badge admin-badge--<?= htmlspecialchars($season['stav']) ?>"><?= htmlspecialchars(admin_status_label($season['stav'])) ?></span></h3><div class="admin-season__meta"><?= (int)$season['leagues'] ?> lig · <?= (int)$season['players'] ?> hráčů · <?= (int)$season['matches'] ?> zápasů</div></div>
-      <div class="admin-actions"><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/sezona.php?rocnik_id=<?= (int)$season['id'] ?>">Spravovat</a><?php if ($season['stav'] === 'priprava'): ?><form method="post"><input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>"><input type="hidden" name="action" value="activate"><input type="hidden" name="rocnik_id" value="<?= (int)$season['id'] ?>"><button class="admin-btn" type="submit">Aktivovat sezónu</button></form><?php endif; ?></div></article>
+      <div class="admin-actions"><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/sezona.php?rocnik_id=<?= (int)$season['id'] ?>">Spravovat</a><?php if ($season['stav'] === 'priprava'): ?><form method="post"><input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>"><input type="hidden" name="action" value="activate"><input type="hidden" name="rocnik_id" value="<?= (int)$season['id'] ?>"><button class="admin-btn" type="submit">Aktivovat sezónu</button></form><?php endif; ?>
+      <?php if (admin_season_is_editable($season)): ?>
+        <form method="post" data-season-name="<?= htmlspecialchars($season['nazev'], ENT_QUOTES, 'UTF-8') ?>" onsubmit="return confirm('Opravdu smazat sezónu „' + this.dataset.seasonName + '“? Odstraní se její ligová nastavení, přiřazení hráčů, zápasy a poháry. Samotní hráči zůstanou zachováni. Tuto akci nelze vrátit.');">
+          <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>">
+          <input type="hidden" name="action" value="delete">
+          <input type="hidden" name="rocnik_id" value="<?= (int)$season['id'] ?>">
+          <button class="admin-btn admin-btn--danger" type="submit">Smazat sezónu</button>
+        </form>
+      <?php endif; ?></div></article>
     <?php endforeach; ?>
   </div></section>
 </main></body></html>
