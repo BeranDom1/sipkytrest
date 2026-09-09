@@ -10,6 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Prepare private database configuration
+        env:
+          WEDOS_DB_CONFIG: ${{ secrets.WEDOS_DB_CONFIG }}
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          config = os.environ.get('WEDOS_DB_CONFIG', '')
+          if not config.startswith('<?php'):
+              raise SystemExit('Missing private database configuration secret')
+          path = Path('config/db.production.php')
+          path.parent.mkdir(exist_ok=True)
+          path.write_text(config)
+          path.chmod(0o600)
+          PY
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.2.0
         with:
@@ -20,7 +36,7 @@ jobs:
           port: ${{ secrets.FTP_PORT }}
           local-dir: ./
           server-dir: ${{ secrets.FTP_SERVER_DIR }}
-          state-name: .ftp-deploy-sync-state-v2.json
+          state-name: .ftp-deploy-sync-state-v3.json
           exclude: |
             .git/**
             .github/**
@@ -36,7 +52,8 @@ jobs:
             discourse-category-auto-tags/**
             node_modules/**
             .env
-            config/**
+            config/db.local.php
+            config/db.production.example.php
             liga-app-clean/**
             img/valentyn.png
             img/event-poster.jpg
