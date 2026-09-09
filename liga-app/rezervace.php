@@ -112,7 +112,7 @@ while ($r = $res->fetch_assoc()) {
 require __DIR__.'/header.php';
 ?>
 
-<main class="nk-content nk-content--flat">
+<main class="nk-content nk-content--flat rez-content">
 <div class="container">
 
 <h2>Rezervace terčů</h2>
@@ -208,6 +208,8 @@ require __DIR__.'/header.php';
 
 <style>
 /* === základ === */
+.rez-content,.rez-content > .container{min-width:0}
+.rez-table-wrapper{width:100%;max-width:100%;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
 .rez-day-nav{display:flex;gap:12px;margin:15px 0}
 .rez-day-nav a{padding:4px 10px;background:#e5e9f2;border-radius:6px}
 .nav-disabled{opacity:.3;padding:4px 10px}
@@ -277,11 +279,6 @@ require __DIR__.'/header.php';
    horizontální scroll
    ========================= */
 @media (max-width:768px){
-
-  .rez-table-wrapper{
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-  }
 
   .rez-table{
     min-width:900px; /* aby bylo co scrollovat */
