@@ -1,0 +1,44 @@
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8081:80"
+    volumes:
+      - ./:/var/www/html
+      - ./.vm/db.local.php:/var/www/html/config/db.local.php:ro
+
+  db:
+    image: mariadb:10.11
+    container_name: sipky-trest-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: d377108_liga
+      MARIADB_USER: sipky
+      MARIADB_PASSWORD_FILE: /run/secrets/db_password
+      MARIADB_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+    secrets:
+      - db_password
+      - db_root_password
+    volumes:
+      - sipky_db:/var/lib/mysql
+      - ./d377108_liga.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
+      - ./database/migrations/2026-08-18-season-workflow.sql:/docker-entrypoint-initdb.d/02-season-workflow.sql:ro
+      - ./database/migrations/2026-09-08-presidential-cup-admin.sql:/docker-entrypoint-initdb.d/03-presidential-cup-admin.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -p$$(cat /run/secrets/db_root_password) --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+secrets:
+  db_password:
+    file: ./.vm/db_password
+  db_root_password:
+    file: ./.vm/db_root_password
+
+volumes:
+  sipky_db:

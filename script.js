@@ -1,42 +1,61 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const popup = document.getElementById("event-popup");
-    const closeBtn = document.getElementById("popup-close");
-    const yearSpan = document.getElementById("year");
+    const popup = document.getElementById("popup");
+    const popupImage = popup?.querySelector(".popup-image");
+    const closeButton = document.getElementById("popup-close");
+    const year = document.getElementById("year");
+    let popupTrigger = null;
 
-    // Rok v patičce
-    if (yearSpan) {
-        yearSpan.textContent = new Date().getFullYear();
+    if (year) {
+        year.textContent = new Date().getFullYear();
     }
 
-    // Logika pro popup – zobrazit jen jednou za den
-    const todayKey = new Date().toISOString().slice(0, 10); // např. 2025-11-20
-    const dismissedFor = localStorage.getItem("eventPopupDismissedFor");
+    function openPopup(trigger) {
+        const imageSource = trigger.dataset.popup;
+        const thumbnail = trigger.querySelector("img");
 
-    if (dismissedFor === todayKey) {
-        // už dnes zavřeno -> popup neschováváme
-        if (popup) popup.style.display = "none";
-    } else {
-        if (popup) popup.style.display = "flex";
+        if (!popup || !popupImage || !imageSource) return;
+
+        popupTrigger = trigger;
+        popupImage.src = imageSource;
+        popupImage.alt = thumbnail?.alt || "Plakát události";
+        popup.hidden = false;
+        popup.setAttribute("aria-hidden", "false");
+        document.body.classList.add("popup-open");
+        closeButton?.focus();
     }
 
     function closePopup() {
-        if (popup) {
-            popup.style.display = "none";
-            localStorage.setItem("eventPopupDismissedFor", todayKey);
-        }
+        if (!popup || popup.hidden) return;
+
+        popup.hidden = true;
+        popup.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("popup-open");
+        popupImage?.removeAttribute("src");
+        popupTrigger?.focus();
     }
 
-    if (closeBtn) {
-        closeBtn.addEventListener("click", closePopup);
-    }
+    document.querySelectorAll(".popup-trigger[data-popup]").forEach((trigger) => {
+        trigger.addEventListener("click", () => openPopup(trigger));
+    });
 
-    // zavření kliknutím mimo obsah
-    if (popup) {
-        popup.addEventListener("click", (e) => {
-            if (e.target === popup) {
-                closePopup();
+    closeButton?.addEventListener("click", closePopup);
+    popup?.addEventListener("click", (event) => {
+        if (event.target === popup) closePopup();
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closePopup();
+    });
+
+    document.querySelectorAll(".copyable[data-copy]").forEach((button) => {
+        button.addEventListener("click", async () => {
+            try {
+                await navigator.clipboard.writeText(button.dataset.copy);
+                button.classList.add("copied");
+                window.setTimeout(() => button.classList.remove("copied"), 2500);
+            } catch {
+                window.prompt("Zkopírujte číslo účtu:", button.dataset.copy);
             }
         });
-    }
+    });
 });
-

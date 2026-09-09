@@ -1,6 +1,6 @@
 <?php
 $title = 'Prezidentský pohár';
-$hideRocnikDropdown = true;
+$hideRocnikDropdown = false;
 
 require __DIR__ . '/../header.php';
 require __DIR__ . '/pohar_funkce.php';
@@ -65,9 +65,7 @@ if (!$turnaj) {
     die('Turnaj nenalezen');
 }
 
-/* =========================================================
- * ⭐ AUTOMATICKÉ VYTVOŘENÍ PAVOUKA (POUZE JEDNOU)
- * ========================================================= */
+/* Pavouk vzniká až po výslovném spuštění v administraci. */
 $stmt = $conn->prepare("
     SELECT COUNT(*) 
     FROM turnaj_zapasy 
@@ -77,10 +75,7 @@ $stmt->bind_param("i", $turnaj_id);
 $stmt->execute();
 $pocetZapasu = (int)$stmt->get_result()->fetch_row()[0];
 
-if ($pocetZapasu === 0) {
-    // ⚠️ POZOR: zavolá se jen jednou
-    generujSportovniPavouk($conn, $turnaj_id, 64);
-}
+$canEditPlayers = false;
 
 /* ===== HRÁČI PRO SELECT (1. KOLO) ===== */
 $hraciSelect = [];
@@ -98,15 +93,6 @@ while ($r = $res->fetch_assoc()) {
     $hraciSelect[] = $r;
 }
 
-$nazvyKol = [
-    1 => '1. kolo',
-    2 => '2. kolo',
-    3 => 'Osmifinále',
-    4 => 'Čtvrtfinále',
-    5 => 'Semifinále',
-    6 => 'Finále',
-];
-
 /* ===== ZÁPASY ===== */
 $stmt = $conn->prepare("
     SELECT *
@@ -122,6 +108,34 @@ $zapasyPoKolech = [];
 while ($row = $res->fetch_assoc()) {
     $zapasyPoKolech[$row['kolo']][] = $row;
 }
+
+$pocetKol = $zapasyPoKolech ? max(array_keys($zapasyPoKolech)) : 0;
+$nazvyKol = [];
+for ($kolo = 1; $kolo <= $pocetKol; $kolo++) {
+    $zbyvaHracu = 2 ** ($pocetKol - $kolo + 1);
+    $nazvyKol[$kolo] = match ($zbyvaHracu) {
+        2 => 'Finále',
+        4 => 'Semifinále',
+        8 => 'Čtvrtfinále',
+        16 => 'Osmifinále',
+        default => $kolo.'. kolo',
+    };
+}
+
+$terminy = json_decode((string)($turnaj['terminy_json'] ?? ''), true);
+if (!is_array($terminy)) {
+    $terminy = [
+        ['label' => 'TOP 64', 'text' => 'odehrát do 1. 3. 2026'],
+        ['label' => 'TOP 32', 'text' => 'odehrát do 1. 4. 2026'],
+        ['label' => 'TOP 16', 'text' => 'odehrát do 25. 4. 2026'],
+        ['label' => 'TOP 8', 'text' => 'odehrát do 20. 5. 2026'],
+        ['label' => 'Grande finále', 'text' => '(semifinále 1, semifinále 2, finále) – pátek 29. 5. 18:00 (sobota 30. 5. 18:00)'],
+    ];
+}
+$uvod = trim((string)($turnaj['uvod'] ?? '')) ?: 'Prezidentský pohár se hraje vyřazovacím způsobem (KO). Poražený v turnaji končí, vítěz postupuje do dalšího kola.';
+$herniMod = trim((string)($turnaj['herni_mod'] ?? '')) ?: 'Cricket (cut-throut) na 3 vítězné legy, semifinále a finále na 4 vítězné legy';
+$systemHry = trim((string)($turnaj['system_hry'] ?? '')) ?: 'KO pavouk (64 → 32 → 16 → 8 → 4 → 2 → vítěz)';
+$losPopis = trim((string)($turnaj['los_popis'] ?? '')) ?: 'Prvních 32 nasazených hráčů + los';
 
 // mapa: [zapas_id][hrac1|hrac2] => "Vítěz zápasu X"
 $placeholderMap = [];
@@ -149,21 +163,25 @@ $placeholderMap[$z['next_match_id']][$z['next_slot']] =
 </header>
 
  <h4>ℹ️ Informace o turnaji</h4> 
- <p> 
- Prezidentský pohár se hraje vyřazovacím způsobem (KO). Poražený v turnaji končí, vítěz postupuje do dalšího kola. 
- </p> 
+ <p><?= nl2br(htmlspecialchars($uvod)) ?></p>
  <ul> 
- <li>🎯 <strong>Herní mód:</strong> Cricket (cut-throut) na 3 vítězné legy, semifinále a finále na 4 vítězné legy </li> 
- <li>🏆 <strong>Systém:</strong> KO pavouk (64 → 32 → 16 → 8 → 4 → 2 → vítěz)</li> 
- <li>🎲 <strong>Los 1. kola:</strong> Prvních 32 nasazených hráčů + los</li> 
+ <li>🎯 <strong>Herní mód:</strong> <?= htmlspecialchars($herniMod) ?></li>
+ <li>🏆 <strong>Systém:</strong> <?= htmlspecialchars($systemHry) ?></li>
+ <li>🎲 <strong>Los 1. kola:</strong> <?= htmlspecialchars($losPopis) ?></li>
  </ul>
-<ul>
-<li><strong>TOP 64</strong> – odehrát do 1.3. 2026</li> 
-<li><strong>TOP 32</strong> – odehrát do 1.4. 2026</li> 
-<li><strong>TOP 16</strong> – odehrát do 25. 4. 2026</li> 
-<li><strong>TOP 8</strong> – odehrát do 20. 5. 2026</li>
-<li><strong>Grande finále</strong> (semifinále 1, semifinále 2, finále) – pátek 29. 5. 18:00 (sobota 30. 5. 18:00)</li> 
-</ul>
+<?php if ($terminy): ?><ul>
+<?php foreach ($terminy as $termin):
+    $terminLabel = trim((string)($termin['label'] ?? ''));
+    $terminText = trim((string)($termin['text'] ?? ''));
+    if ($terminLabel === '' || $terminText === '') continue;
+?>
+<li><strong><?= htmlspecialchars($terminLabel) ?></strong> – <?= htmlspecialchars($terminText) ?></li>
+<?php endforeach; ?>
+</ul><?php endif; ?>
+
+<?php if ($pocetZapasu === 0): ?>
+  <div class="notice">Turnaj se připravuje. Pavouk bude zveřejněn po uzavření seznamu hráčů a provedení losu.</div>
+<?php endif; ?>
 
 <?php foreach ($zapasyPoKolech as $kolo => $zapasy): ?>
 <section class="kolo">
@@ -219,7 +237,7 @@ if ($z['skore1'] !== null && $z['skore2'] !== null) {
     ): ?>
         <span class="bye-label">Volný los</span>
 
-        <?php if ($isEditor): ?>
+        <?php if ($canEditPlayers): ?>
             <button
                 type="button"
                 class="btn-cancel-bye"
@@ -233,7 +251,7 @@ if ($z['skore1'] !== null && $z['skore2'] !== null) {
 
     <!-- HRÁČ 1 -->
     <div class="hrac hrac-left">
-        <?php if ($isEditor && $kolo === 1): ?>
+        <?php if ($canEditPlayers && $kolo === 1): ?>
             <select class="hrac-select"
                     data-zapas-id="<?= (int)$z['id'] ?>"
                     data-slot="hrac1_id">
@@ -263,12 +281,12 @@ if ($z['skore1'] !== null && $z['skore2'] !== null) {
     <!-- SKÓRE -->
     <div class="skore">
         <?php if ($isEditor && $z['hrac1_id'] && $z['hrac2_id']): ?>
-            <input type="number" min="0"  class="score-input"
+            <input type="number" min="0" max="<?= vitezneLegyProKolo($turnaj['legy_json'] ?? null, (int)$kolo) ?>" class="score-input"
                    value="<?= (int)$z['skore1'] ?>"
                    data-zapas-id="<?= (int)$z['id'] ?>"
                    data-slot="skore1">
             <span>:</span>
-            <input type="number" min="0" class="score-input"
+            <input type="number" min="0" max="<?= vitezneLegyProKolo($turnaj['legy_json'] ?? null, (int)$kolo) ?>" class="score-input"
                    value="<?= (int)$z['skore2'] ?>"
                    data-zapas-id="<?= (int)$z['id'] ?>"
                    data-slot="skore2">
@@ -279,7 +297,7 @@ if ($z['skore1'] !== null && $z['skore2'] !== null) {
 
     <!-- HRÁČ 2 -->
     <div class="hrac hrac-right">
-        <?php if ($isEditor && $kolo === 1): ?>
+        <?php if ($canEditPlayers && $kolo === 1): ?>
             <select class="hrac-select"
                     data-zapas-id="<?= (int)$z['id'] ?>"
                     data-slot="hrac2_id">

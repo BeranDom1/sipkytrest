@@ -54,9 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($copiedNames === 0) {
                     $fallback = $conn->prepare(
                         'INSERT INTO ligy_nazvy (rocnik_id, liga_id, nazev)
-                         SELECT ?, id, nazev FROM ligy ORDER BY poradi'
+                         SELECT ?, l.id, l.nazev FROM ligy l
+                         WHERE EXISTS (
+                           SELECT 1 FROM hraci_v_sezone hs
+                           WHERE hs.rocnik_id = ? AND hs.liga_id = l.id
+                         )'
                     );
-                    $fallback->bind_param('i', $newId);
+                    $fallback->bind_param('ii', $newId, $sourceId);
                     $fallback->execute();
                     $fallback->close();
                 }
@@ -77,17 +81,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $copyLogos->execute();
                 $copyLogos->close();
             } else {
-                $fallback = $conn->prepare(
-                    'INSERT INTO ligy_nazvy (rocnik_id, liga_id, nazev)
-                     SELECT ?, id, nazev FROM ligy ORDER BY poradi'
-                );
-                $fallback->bind_param('i', $newId);
-                $fallback->execute();
-                $fallback->close();
+                $leagueCount = max(1, min(20, (int)($_POST['league_count'] ?? 1)));
+                $existingStmt = $conn->prepare('SELECT id, nazev FROM ligy ORDER BY poradi, cislo LIMIT ?');
+                $existingStmt->bind_param('i', $leagueCount);
+                $existingStmt->execute();
+                $baseLeagues = $existingStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                $existingStmt->close();
+
+                $insertName = $conn->prepare('INSERT INTO ligy_nazvy (rocnik_id, liga_id, nazev) VALUES (?, ?, ?)');
+                foreach ($baseLeagues as $baseLeague) {
+                    $leagueId = (int)$baseLeague['id'];
+                    $leagueName = (string)$baseLeague['nazev'];
+                    $insertName->bind_param('iis', $newId, $leagueId, $leagueName);
+                    $insertName->execute();
+                }
+
+                for ($index = count($baseLeagues) + 1; $index <= $leagueCount; $index++) {
+                    $max = $conn->query('SELECT COALESCE(MAX(cislo), 0) AS cislo, COALESCE(MAX(poradi), 0) AS poradi FROM ligy')->fetch_assoc();
+                    $number = (int)$max['cislo'] + 1;
+                    $order = (int)$max['poradi'] + 1;
+                    $leagueName = $index.'. liga';
+                    $insertLeague = $conn->prepare('INSERT INTO ligy (nazev, cislo, poradi) VALUES (?, ?, ?)');
+                    $insertLeague->bind_param('sii', $leagueName, $number, $order);
+                    $insertLeague->execute();
+                    $leagueId = (int)$conn->insert_id;
+                    $insertLeague->close();
+                    $insertName->bind_param('iis', $newId, $leagueId, $leagueName);
+                    $insertName->execute();
+                }
+                $insertName->close();
             }
 
             $conn->commit();
-            header('Location: /liga-app/admin/sezona.php?rocnik_id=' . $newId . '&created=1');
+            header('Location: /liga-app/admin/ligy.php?rocnik_id=' . $newId . '&created=1');
             exit;
         }
 
@@ -150,9 +176,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $seasons = $conn->query(
     "SELECT r.id, r.nazev, r.locked, r.stav,
             COUNT(DISTINCT hs.hrac_id) AS players,
-            COUNT(DISTINCT hs.liga_id) AS leagues,
+            COUNT(DISTINCT ln.liga_id) AS leagues,
             COUNT(DISTINCT z.id) AS matches
      FROM rocniky r
+     LEFT JOIN ligy_nazvy ln ON ln.rocnik_id = r.id
      LEFT JOIN hraci_v_sezone hs ON hs.rocnik_id = r.id
      LEFT JOIN zapasy z ON z.rocnik_id = r.id
      GROUP BY r.id, r.nazev, r.locked, r.stav
@@ -173,11 +200,12 @@ $csrf = csrf_token();
 
   <div class="admin-grid admin-grid--two">
     <section class="admin-card">
-      <h2>Nová prázdná sezóna</h2>
+      <h2>Nová sezóna s vlastními ligami</h2>
       <form method="post">
         <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>"><input type="hidden" name="action" value="create"><input type="hidden" name="source_rocnik_id" value="0">
         <div class="admin-field"><label for="empty-name">Název</label><input id="empty-name" name="nazev" placeholder="Podzim 2026" required maxlength="100"></div>
-        <button class="admin-btn" type="submit">Vytvořit prázdnou sezónu</button>
+        <div class="admin-field"><label for="league-count">Počet lig</label><input id="league-count" type="number" name="league_count" value="6" min="1" max="20" required></div>
+        <button class="admin-btn" type="submit">Vytvořit sezonu a nastavit ligy</button>
       </form>
     </section>
     <section class="admin-card">

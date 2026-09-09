@@ -1,6 +1,6 @@
 # Šipky Třešť – technický kontext projektu
 
-> Stav analýzy: 18. 8. 2026. Dokument popisuje současný stav repozitáře a lokální databáze. Není návrhem nové architektury. Při změně architektury, databázového schématu nebo hlavních datových toků musí být aktualizován.
+> Aktualizováno: 18. 8. 2026 po zavedení správy životního cyklu sezón, trvalých rozpisů a mobilního redesignu.
 
 ## 1. Účel a rozsah
 
@@ -87,7 +87,7 @@ Ligová aplikace
        └── nový pohár ─────> turnaje, turnaj_hraci, turnaj_zapasy
 ```
 
-PHP stránky přistupují k databázi přímo přes PDO. Neexistuje oddělená servisní nebo API vrstva. Většina výpočtů tabulek a statistik probíhá dynamicky při vykreslení stránky.
+PHP stránky přistupují k databázi přímo přes MySQLi. Neexistuje oddělená servisní nebo API vrstva. Většina výpočtů tabulek a statistik probíhá dynamicky při vykreslení stránky.
 
 ## 5. Databázový model
 
@@ -100,8 +100,9 @@ Lokální import obsahuje 19 základních tabulek. Databáze kombinuje novějš�
 - `id` – primární klíč
 - `nazev` – název sezóny
 - `locked` – zamčení sezóny proti některým administrativním změnám
+- `stav` – životní cyklus `priprava`, `aktivni`, `archivni`
 
-Data obsahují sezóny Podzim 2024, Jaro 2025, Podzim 2025 a Jaro 2026. První tři jsou zamčené, Jaro 2026 je odemčené.
+Migrace `database/migrations/2026-08-18-season-workflow.sql` převádí zamčené sezóny do archivu, aktuální odemčenou sezónu označí jako aktivní a přidává stavový model. V lokální databázi je navíc připraven Podzim 2026 zkopírovaný z Jara 2026.
 
 #### `ligy`
 
@@ -164,6 +165,7 @@ Aktivní ligové tabulky tyto kešované statistiky nepoužívají. Starý Prezi
 - datum zápasu
 - průměry, high finish a počty hodů 100/120/140/160/180 pro oba hráče
 - unikátní kombinace `rocnik_id, liga_id, hrac1_id, hrac2_id`
+- `kolo` – číslo kola trvale vygenerovaného rozpisu; přidává je migrace sezonního workflow
 
 Většina vztahů v této tabulce není v databázi chráněna cizími klíči; integritu drží aplikační kód.
 
@@ -235,7 +237,7 @@ Většina vztahů v této tabulce není v databázi chráněna cizími klíči; 
 
 ## 6. Sezóna a navigace
 
-Aktivní ročník je uložen v `$_SESSION['rocnik_id']`. Pokud chybí, `header.php` zvolí nejnovější ročník. `set_season.php` přijímá POST požadavek s CSRF tokenem, ověří existenci ročníku a přesměruje zpět na bezpečnou interní adresu.
+Vybraný ročník je uložen v `$_SESSION['rocnik_id']`. Pokud chybí, `header.php` zvolí ročník ve stavu `aktivni`; pouze pokud žádný neexistuje, použije nejnovější. `set_season.php` přijímá POST požadavek s CSRF tokenem, ověří existenci ročníku a přesměruje zpět na bezpečnou interní adresu.
 
 `common.php` obsahuje centrální pomocné funkce pro:
 
@@ -415,7 +417,7 @@ Priorita níže je orientační; tento dokument problémy pouze eviduje.
 ### Vysoké
 
 1. AJAX endpointy nového poháru kontrolují session roli i CSRF token posílaný v hlavičce `X-CSRF-Token`. Stejnou CSRF ochranu používá také formulář ručního obsazení prvního kola.
-2. `admin/ligy_loga.php` není jednoznačně chráněn administrátorskou kontrolou a `admin/ulozit_logo.php` nemá dostatečnou kontrolu role ani CSRF.
+2. Starší administrační endpointy je nutné při dalších úpravách průběžně auditovat; nové sezonní zápisy, rozřazení, názvy lig a loga ověřují administrátorskou roli, CSRF a stav sezóny.
 3. Dvojí identita hráčů (`hraci` versus `hraci_unikatni_jmena`) může propojit nesprávná data ve starém poháru.
 4. Nasazovací workflow kopíruje téměř celý repozitář, tedy potenciálně i SQL exporty a pomocné skripty, pokud jsou v `main`.
 
@@ -450,11 +452,11 @@ Před odstraněním čehokoli je nutné ověřit produkční odkazy, ručně pou
 
 ## 14. Ověřený stav dat k datu analýzy
 
-- 4 ročníky,
+- 5 ročníků (čtyři původní a lokálně připravený Podzim 2026),
 - 6 lig,
 - 69 kanonických unikátních jmen hráčů,
-- 195 přiřazení hráče do sezóny,
-- 815 ligových zápasů,
+- 255 přiřazení hráče do sezóny,
+- 1085 ligových zápasů; 270 zápasů Podzimu 2026 je bez výsledků,
 - 188 aktivních rezervací a 173 záznamů ve staré rezervační tabulce,
 - 1 nový turnaj, 62 účastníků a 63 zápasů,
 - 49 zápasů starého Prezidentského poháru.
@@ -480,3 +482,22 @@ Při každé další úpravě projektu:
 ## 16. Doporučený postup při orientaci
 
 Pro ligový problém začít v wrapperu příslušné ligy a pokračovat do společného `liga.php`, `rozpis.php` nebo `stat.php`. Pro zápis výsledku sledovat tok `zapas_create.php` → `zapas.php` → `save_stats.php`. Pro hráče začít v `hraci_v_sezone` a `hraci_unikatni_jmena`. Pro pohár nejdříve podle ročníku určit starý či nový modul. Pro problémy se vzhledem začít u `header.php` a `assets/theme.final.css`, nikoli automaticky u všech CSS souborů.
+
+## 17. Sezonní workflow a mobilní administrace
+
+Nové obrazovky `admin/sezony.php`, `admin/sezona.php` a `admin/rozpis_sezony.php` tvoří hlavní administrátorský tok:
+
+1. vytvořit prázdnou sezónu nebo kopii předchozí sezóny,
+2. ve stavu `priprava` upravit účast hráčů a jejich ligu,
+3. zkontrolovat počty hráčů a vygenerovat trvalý rozpis každý s každým,
+4. aktivovat pouze kompletní a konzistentní sezónu.
+
+Kopie sezóny přenáší názvy lig, loga a členství hráčů. Nepřenáší zápasy, výsledky ani statistiky. Přesun hráče mezi ligami je změna řádku `hraci_v_sezone`; odstranění ze sezóny nemaže jeho kanonickou identitu ani historické výsledky. Po vygenerování rozpisu je změna účastníků zablokovaná. Neodehraný rozpis lze smazat, ale jakmile obsahuje datum, skóre nebo zápasovou statistiku, přegenerování je zakázáno.
+
+Generátor podporuje libovolný počet hráčů. Pro lichý počet vytvoří v každém kole jedno volno, které se neukládá jako zápas hráče proti sobě, ale veřejný rozpis je zobrazuje jako `VOLNO`. Aktivace kontroluje očekávaný počet zápasů, unikátnost dvojic, nepřítomnost zápasů hráče se sebou a vyplněná kola. Aktivace převede dosavadní aktivní sezónu do `archivni` a uzamkne ji.
+
+Historické sezóny jsou pouze pro čtení. Výsledky lze zapisovat v aktivní sezóně rolemi `admin` a `stat_editor`; v připravované sezóně pouze administrátorem. Starší přímé administrační adresy musí respektovat stejný stavový model.
+
+Společný mobilní vzhled ligové aplikace je v `assets/theme.final.css`, administrační komponenty v `assets/admin.css`. Návrh používá modrou, bílou, stříbrnou a antracitovou paletu, mobilní karty a na desktopu postranní navigaci. Základní rozpis byl ověřen bez horizontálního přetečení v šířkách 360, 375, 390, 414, 768 a 1280 px.
+
+Migrace se nespouští automaticky při FTP deployi. Před nasazením této verze na WEDOS je nutné jednorázově aplikovat `database/migrations/2026-08-18-season-workflow.sql` na produkční databázi a teprve potom nasadit PHP/CSS soubory.

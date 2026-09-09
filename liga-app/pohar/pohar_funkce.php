@@ -34,9 +34,13 @@ function getJmenoHraca(mysqli $conn, int $hrac_id): string
  * - žádní hráči
  * - zrcadlové párování
  */
-function generujSportovniPavouk(mysqli $conn, int $turnaj_id, int $velikost = 64): void
+function generujSportovniPavouk(mysqli $conn, int $turnaj_id, int $velikost = 64, bool $vlastniTransakce = true): void
 {
-    $conn->begin_transaction();
+    if ($velikost < 2 || $velikost > 64 || ($velikost & ($velikost - 1)) !== 0) {
+        throw new InvalidArgumentException('Velikost pavouka musí být 2, 4, 8, 16, 32 nebo 64.');
+    }
+
+    if ($vlastniTransakce) $conn->begin_transaction();
 
     try {
         $zapasy = [];
@@ -91,14 +95,24 @@ function generujSportovniPavouk(mysqli $conn, int $turnaj_id, int $velikost = 64
             }
         }
 
-        $conn->commit();
+        if ($vlastniTransakce) $conn->commit();
 
     } catch (Throwable $e) {
-        $conn->rollback();
+        if ($vlastniTransakce) $conn->rollback();
         throw $e;
     }
 }
-function validujSkorePodleKola(int $kolo, int $s1, int $s2): void
+
+function vitezneLegyProKolo(?string $legyJson, int $kolo): int
+{
+    $legy = json_decode((string)$legyJson, true);
+    if (is_array($legy) && isset($legy[(string)$kolo])) {
+        return max(1, min(15, (int)$legy[(string)$kolo]));
+    }
+    return $kolo >= 5 ? 4 : 3;
+}
+
+function validujSkorePodleKola(int $kolo, int $s1, int $s2, int $vitezneLegy): void
 {
     if ($s1 === $s2) {
         throw new Exception('Remíza není povolena.');
@@ -107,18 +121,11 @@ function validujSkorePodleKola(int $kolo, int $s1, int $s2): void
     $max = max($s1, $s2);
     $min = min($s1, $s2);
 
-    // 1.–4. kolo → na 3 vítězné legy
-    if ($kolo <= 4) {
-        if ($max !== 3 || $min < 0 || $min > 2) {
-            throw new Exception('Neplatné skóre – hraje se na 3 vítězné legy (3:0 až 3:2).');
-        }
-    }
-
-    // semifinále + finále → na 4 vítězné legy
-    if ($kolo >= 5) {
-        if ($max !== 4 || $min < 0 || $min > 3) {
-            throw new Exception('Neplatné skóre – hraje se na 4 vítězné legy (4:0 až 4:3).');
-        }
+    if ($max !== $vitezneLegy || $min < 0 || $min >= $vitezneLegy) {
+        throw new Exception(
+            'Neplatné skóre – toto kolo se hraje na '.$vitezneLegy.
+            ' vítězné legy ('.$vitezneLegy.':0 až '.$vitezneLegy.':'.($vitezneLegy - 1).').'
+        );
     }
 }
 
@@ -138,9 +145,11 @@ function ulozSkoreAZpropagujViteze(mysqli $conn, int $zapas_id, int $s1, int $s2
     try {
         // zamkni zápas
         $stmt = $conn->prepare("
-            SELECT id, kolo, hrac1_id, hrac2_id, vitez_id, next_match_id, next_slot
-            FROM turnaj_zapasy
-            WHERE id = ?
+            SELECT z.id, z.kolo, z.hrac1_id, z.hrac2_id, z.vitez_id,
+                   z.next_match_id, z.next_slot, t.legy_json
+            FROM turnaj_zapasy z
+            JOIN turnaje t ON t.id = z.turnaj_id
+            WHERE z.id = ?
             FOR UPDATE
         ");
         $stmt->bind_param("i", $zapas_id);
@@ -184,7 +193,8 @@ if (
 }
 
         // validace skóre
-        validujSkorePodleKola((int)$z['kolo'], $s1, $s2);
+        $vitezneLegy = vitezneLegyProKolo($z['legy_json'] ?? null, (int)$z['kolo']);
+        validujSkorePodleKola((int)$z['kolo'], $s1, $s2, $vitezneLegy);
 
         // určení vítěze
         if ($z['hrac1_id'] && $z['hrac2_id']) {

@@ -72,15 +72,16 @@ LEFT JOIN ligy_nazvy ln
 LEFT JOIN ligy_loga ll
   ON ll.liga_id = l.id
  AND ll.rocnik_id = ?
-WHERE NOT (
-  l.nazev = '0. liga'
-  AND ln.nazev IS NULL
-)
-ORDER BY l.cislo
+WHERE ln.rocnik_id IS NOT NULL
+   OR EXISTS (
+       SELECT 1 FROM hraci_v_sezone hs
+       WHERE hs.rocnik_id = ? AND hs.liga_id = l.id
+   )
+ORDER BY l.poradi, l.cislo
 ";
 
 $st = $conn->prepare($sql);
-$st->bind_param('ii', $rocnik_id, $rocnik_id);
+$st->bind_param('iii', $rocnik_id, $rocnik_id, $rocnik_id);
 $st->execute();
 $ligy = $st->get_result()->fetch_all(MYSQLI_ASSOC);
 $st->close();
@@ -90,11 +91,8 @@ $st->close();
   <ul class="nav flex-column">
 
 <?php foreach ($ligy as $liga):
-    $i = (int)$liga['cislo'];
-
-    $tableFile  = "{$i}.liga.php";
-    $rozpisFile = "{$i}rozpis.php";
-    $statFile   = "{$i}.stat.php";
+    $leagueId = (int)$liga['liga_id'];
+    $isCurrentLeague = (int)($_GET['liga_id'] ?? 0) === $leagueId;
 
     $logoUrl = $liga['logo']
         ? $base . '/sponzor/' . $liga['logo']
@@ -121,22 +119,22 @@ $st->close();
     </li>
 
     <li class="nav-item">
-      <a class="nav-link d-flex align-items-center ps-4 <?= $currentPage === $tableFile ? 'active' : '' ?>"
-         href="<?= $base ?>/ligy/<?= $tableFile ?>">
+      <a class="nav-link d-flex align-items-center ps-4 <?= $currentPage === 'liga.php' && $isCurrentLeague ? 'active' : '' ?>"
+         href="<?= $base ?>/liga.php?liga_id=<?= $leagueId ?>">
         Tabulka
       </a>
     </li>
 
     <li class="nav-item">
-      <a class="nav-link d-flex align-items-center ps-4 <?= $currentPage === $rozpisFile ? 'active' : '' ?>"
-         href="<?= $base ?>/rozpisy/<?= $rozpisFile ?>">
+      <a class="nav-link d-flex align-items-center ps-4 <?= $currentPage === 'rozpis.php' && $isCurrentLeague ? 'active' : '' ?>"
+         href="<?= $base ?>/rozpis.php?liga_id=<?= $leagueId ?>">
         Rozpis
       </a>
     </li>
 
     <li class="nav-item mb-3">
-      <a class="nav-link d-flex align-items-center ps-4 <?= $currentPage === $statFile ? 'active' : '' ?>"
-         href="<?= $base ?>/statistiky/<?= $statFile ?>">
+      <a class="nav-link d-flex align-items-center ps-4 <?= $currentPage === 'stat.php' && $isCurrentLeague ? 'active' : '' ?>"
+         href="<?= $base ?>/stat.php?liga_id=<?= $leagueId ?>">
         Statistiky
       </a>
     </li>

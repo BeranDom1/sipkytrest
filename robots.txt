@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /config/
+Disallow: /database/
+Disallow: /liga-app/admin/
+
+Sitemap: https://sipkytrest.cz/sitemap.xml

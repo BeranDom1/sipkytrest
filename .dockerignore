@@ -1,0 +1,6 @@
+.git
+.github
+.vm
+config/db.local.php
+config/db.production.php
+discourse-category-auto-tags

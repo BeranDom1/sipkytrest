@@ -1,0 +1,61 @@
+#!/bin/bash
+set -euo pipefail
+
+PROJECT_DIR=/opt/sipky-trest
+CONTAINER=sipky-trest-db
+DATABASE=d377108_liga
+PASSWORD_FILE="${PROJECT_DIR}/.vm/db_root_password"
+
+die() {
+    echo "Chyba: $*" >&2
+    exit 1
+}
+
+[[ -r "${PASSWORD_FILE}" ]] || die "chybi databazove prihlaseni"
+password=$(cat "${PASSWORD_FILE}")
+
+db_exec() {
+    /usr/bin/docker exec -i \
+        -e "MYSQL_PWD=${password}" \
+        "${CONTAINER}" \
+        mariadb -uroot --database="${DATABASE}" "$@"
+}
+
+case "${1:-}" in
+    status)
+        /usr/bin/docker inspect --format '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' "${CONTAINER}"
+        db_exec --batch --skip-column-names -e \
+            "SELECT CONCAT('database=', DATABASE(), ', tables=', COUNT(*)) FROM information_schema.tables WHERE table_schema = DATABASE();"
+        ;;
+    query)
+        [[ $# -eq 2 ]] || die "pouziti: sudo sipky-db query 'SELECT ...'"
+        db_exec --table -e "$2"
+        ;;
+    apply)
+        [[ $# -eq 2 ]] || die "pouziti: sudo sipky-db apply database/migrations/soubor.sql"
+        requested=$2
+        [[ "${requested}" = /* ]] || requested="${PROJECT_DIR}/${requested}"
+        sql_file=$(realpath -e -- "${requested}") || die "SQL soubor neexistuje"
+        migrations_dir=$(realpath -e -- "${PROJECT_DIR}/database/migrations")
+        [[ "${sql_file}" == "${migrations_dir}/"*.sql ]] || die "lze spoustet jen .sql soubory z database/migrations"
+        db_exec < "${sql_file}"
+        echo "Migrace aplikovana: ${sql_file#${PROJECT_DIR}/}"
+        ;;
+    backup)
+        [[ $# -eq 1 ]] || die "pouziti: sudo sipky-db backup"
+        backup_dir="${PROJECT_DIR}/database/backups"
+        install -d -o beran -g repo-sipky-trest -m 2770 "${backup_dir}"
+        backup_file="${backup_dir}/sipky-$(date +%Y%m%d-%H%M%S).sql"
+        /usr/bin/docker exec \
+            -e "MYSQL_PWD=${password}" \
+            "${CONTAINER}" \
+            mariadb-dump -uroot --single-transaction --routines --triggers "${DATABASE}" > "${backup_file}"
+        chown beran:repo-sipky-trest "${backup_file}"
+        chmod 0660 "${backup_file}"
+        echo "Zaloha vytvorena: ${backup_file}"
+        ;;
+    *)
+        echo "Pouziti: sudo sipky-db {status|query SQL|apply SOUBOR|backup}" >&2
+        exit 2
+        ;;
+esac

@@ -24,8 +24,23 @@ jobs:
           exclude: |
             .git/**
             .github/**
+            .gitignore
+            .dockerignore
+            Dockerfile
+            compose.yaml
+            ops/**
+            .vm/**
+            **/*.sql
+            **/*.md
+            database/**
+            discourse-category-auto-tags/**
             node_modules/**
             .env
-            config/db.local.php
-            config/db.production.php
+            config/**
             liga-app-clean/**
+            img/valentyn.png
+            img/event-poster.jpg
+            img/514314068_1768049717116029_1756491033477084035_n.jpg
+            img/uvodni_fotka.jpg
+            img/open.jpg
+            **/*.log

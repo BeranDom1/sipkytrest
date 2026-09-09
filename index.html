@@ -6,7 +6,15 @@
     <title>Šipky Třešť</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Oficiální stránky šipkařského klubu Šipky Třešť">
-    <!-- Google font for modern look -->
+    <link rel="canonical" href="https://sipkytrest.cz/">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="cs_CZ">
+    <meta property="og:title" content="Šipky Třešť">
+    <meta property="og:description" content="Oficiální stránky šipkařského klubu Šipky Třešť">
+    <meta property="og:url" content="https://sipkytrest.cz/">
+    <meta property="og:image" content="https://sipkytrest.cz/img/logo.png">
+    <meta name="theme-color" content="#0b1220">
+    <link rel="icon" href="img/logo.png" type="image/png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -27,14 +35,16 @@
     </nav>
     <div class="hero">
         <div class="hero-logo">
-            <img src="img/logo.png" alt="Šipky Třešť" class="logo-image">
+            <img src="img/logo.png" alt="Šipky Třešť" class="logo-image" width="284" height="264">
+        </div>
+    </div>
 </header>
 
 <main class="main-content"> <!-- obsah je nyní ve světlých kartách pro čitelnost -->
 
     <!-- FEATURE -->
     <section class="section about feature">
-        <h2 id="about">Šipky Třešť</h2>
+        <h1 id="about">Šipky Třešť</h1>
         <p>
             Jsme šipkařský klub z Třeště, kde se potkává dobrá atmosféra, férová hra a chuť se zlepšovat.
             Pořádáme místní ligu, turnaje i jednorázové akce – ať už hraješ pravidelně, nebo si chceš šipky jen vyzkoušet.
@@ -43,18 +53,19 @@
             Přijď si zahrát, změřit síly s ostatními a stát se součástí party.
         </p>
         <p>
-            <img src="img/sportbar.jpg" alt="Šipky Třešť" class="hero-photo">
+            <img src="img/sportbar.jpg" alt="Prostory SportBaru Třešť" class="hero-photo" width="1536" height="2048" decoding="async">
         </p>
     </section>
     <!-- FEATURE -->
     <section class="section event feature">
         <h2>Nejbližší událost</h2>
-<p>
-        <img src="img/plakat_cp_iv_2026.jpg"
-             alt="Český pohár IV v Třešti – 12. září 2026"
-             class="event-poster popup-trigger"
-             data-popup="img/plakat_cp_iv_2026.jpg">
-</p>
+        <button class="event-poster-button popup-trigger" type="button"
+                data-popup="img/plakat_cp_iv_2026.jpg"
+                aria-label="Zvětšit plakát Českého poháru IV v Třešti">
+            <img src="img/plakat_cp_iv_2026.jpg"
+                 alt="Český pohár IV v Třešti – 12. září 2026"
+                 class="event-poster" width="849" height="1200" decoding="async">
+        </button>
     </section>
 
     <!-- KONTAKT -->
@@ -86,7 +97,7 @@
                 <div class="contact-text">
                     <h3>Telefon</h3>
                     <p>
-                        +420 603 723 705<br>
+                        <a href="tel:+420603723705">+420 603 723 705</a><br>
                         <span class="contact-muted">Odpovědný vedoucí: Jakub Šebesta</span>
                     </p>
                 </div>
@@ -99,9 +110,9 @@
                     <p><strong>IČO:</strong> 23309211</p>
                     <p>
                         <strong>Číslo účtu:</strong>
-                        <span class="copyable" data-copy="6807011349/0800">
+                        <button class="copyable" type="button" data-copy="6807011349/0800" aria-label="Zkopírovat číslo účtu 6807011349 lomeno 0800">
                             6807011349 / 0800
-                        </span>
+                        </button>
                     </p>
                     <p class="contact-muted">
                         Účet i IČO patří klubu D.S. Šipky Třešť, z. s.
@@ -116,49 +127,49 @@
         <div class="sponsor-logos">
             <a href="https://www.trest.cz" target="_blank" class="sponsor-logo" rel="noopener noreferrer">
                 <div class="logo-tile">
-                    <img src="img/trest.png" alt="Město Třešť">
+                    <img src="img/trest.png" alt="Město Třešť" width="78" height="89" loading="lazy" decoding="async">
                 </div>
                 <span>Město Třešť</span>
             </a>
             <a href="https://www.u-kapra.cz" target="_blank" class="sponsor-logo" rel="noopener noreferrer">
                 <div class="logo-tile">
-                    <img src="img/u-kapra.png" alt="Restaurace U Kapra">
+                    <img src="img/u-kapra.png" alt="Restaurace U Kapra" width="152" height="95" loading="lazy" decoding="async">
                 </div>
                 <span>Restaurace U Kapra</span>
             </a>
-            <a href="http://www.amkuba.cz/" target="_blank" class="sponsor-logo" rel="noopener noreferrer">
+            <a href="https://www.amkuba.cz/" target="_blank" class="sponsor-logo" rel="noopener noreferrer">
                 <div class="logo-tile">
-                    <img src="img/automoto-1.png" alt="Auto Moto Kuba">
+                    <img src="img/automoto-1.png" alt="Auto Moto Kuba" width="350" height="99" loading="lazy" decoding="async">
                 </div>
                 <span>Auto Moto Kuba</span>
             </a>
             <a href="https://www.fpnet.cz/" target="_blank" class="sponsor-logo" rel="noopener noreferrer">
                 <div class="logo-tile">
-                    <img src="img/302789054_595346948948759_3613176175467645895_n.png" alt="FPnet">
+                    <img src="img/302789054_595346948948759_3613176175467645895_n.png" alt="FPnet" width="1959" height="720" loading="lazy" decoding="async">
                 </div>
                 <span>FPnet</span>
             </a>
             <a href="https://www.sypstav.cz/" target="_blank" class="sponsor-logo" rel="noopener noreferrer">
                 <div class="logo-tile">
-                    <img src="img/sypstav.png" alt="Sypstav Třešť">
+                    <img src="img/sypstav.png" alt="Sypstav Třešť" width="282" height="127" loading="lazy" decoding="async">
                 </div>
                 <span>Sypstav Třešť</span>
             </a>
             <a href="https://www.podzimek.cz" target="_blank" class="sponsor-logo" rel="noopener noreferrer">
                 <div class="logo-tile">
-                    <img src="img/podzimek.jpg" alt="Podzimek a synové s.r.o.">
+                    <img src="img/podzimek.jpg" alt="Podzimek a synové s.r.o." width="2048" height="726" loading="lazy" decoding="async">
                 </div>
                 <span>Podzimek a synové s.r.o.</span>
             </a>
             <a href="https://www.facebook.com/PodlahySvoboda/?locale=cs_CZ" target="_blank" class="sponsor-logo" rel="noopener noreferrer">
                 <div class="logo-tile">
-                    <img src="img/svoboda.jpg" alt="Podlahy Svoboda">
+                    <img src="img/svoboda.jpg" alt="Podlahy Svoboda" width="1280" height="720" loading="lazy" decoding="async">
                 </div>
                 <span>Podlahy Svoboda</span>
             </a>
             <a href="https://www.sipkytrest.cz/liga-app/sponzor/holoubek.jpg" target="_blank" class="sponsor-logo" rel="noopener noreferrer">
                 <div class="logo-tile">
-                    <img src="img/holoubek.jpg" alt="Truhlářství Holoubek">
+                    <img src="img/holoubek.jpg" alt="Střechy Holoubek" width="1280" height="720" loading="lazy" decoding="async">
                 </div>
                 <span>Střechy Holoubek</span>
             </a>
@@ -170,13 +181,13 @@
         <div class="partners-grid">
             <a href="https://www.czechdarts.org/" target="_blank" class="partner-logo" rel="noopener noreferrer">
                 <div class="logo-tile">
-                    <img src="img/organizace.jpg" alt="Česká šipková organizace">
+                    <img src="img/organizace.jpg" alt="Česká šipková organizace" width="79" height="89" loading="lazy" decoding="async">
                 </div>
                 <span>Česká šipková organizace</span>
             </a>
             <a href="https://www.rozbehejtrest.cz" target="_blank" class="partner-logo" rel="noopener noreferrer">
                 <div class="logo-tile">
-                    <img src="img/rozbehej-1.png" alt="Rozběhej Třešť">
+                    <img src="img/rozbehej-1.png" alt="Rozběhej Třešť" width="152" height="74" loading="lazy" decoding="async">
                 </div>
                 <span>Rozběhej Třešť</span>
             </a>
@@ -203,13 +214,14 @@
     </section> </main>
 
 <footer class="site-footer">
-    <p>© 2026 Šipky Třešť</p>
+    <p>© <span id="year">2026</span> Šipky Třešť</p>
 </footer>
 
 <!-- POPUP -->
-<div class="popup-overlay" id="popup" style="display:none;" role="dialog" aria-modal="true" aria-hidden="true">
+<div class="popup-overlay" id="popup" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="popup-title" hidden>
     <div class="popup-content" role="document">
-        <button class="popup-close" aria-label="Zavřít">&times;</button>
+        <h2 id="popup-title" class="sr-only">Plakát nejbližší události</h2>
+        <button class="popup-close" id="popup-close" type="button" aria-label="Zavřít">&times;</button>
         <img src="" alt="" class="popup-image">
     </div>
 </div>

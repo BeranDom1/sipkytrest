@@ -68,5 +68,30 @@ if (strpos($path, $BASE_URL) !== 0) {
     $query = '';
 }
 
+// Na stránce Prezidentského poháru nestačí zachovat původní ID
+// turnaje: po přepnutí ročníku musí odkaz směřovat na turnaj nově
+// vybrané sezony.
+if (in_array($path, [
+    $BASE_URL.'/prezidentsky-pohar.php',
+    $BASE_URL.'/pohar/pohar_turnaj.php',
+], true)) {
+    $turnaj_id = 0;
+    if ($st = $conn->prepare('SELECT id FROM turnaje WHERE rocnik_id=? ORDER BY id DESC LIMIT 1')) {
+        $st->bind_param('i', $ok_id);
+        $st->execute();
+        $st->bind_result($found_turnaj_id);
+        if ($st->fetch()) $turnaj_id = (int)$found_turnaj_id;
+        $st->close();
+    }
+
+    if ($turnaj_id > 0) {
+        $path = $BASE_URL.'/pohar/pohar_turnaj.php';
+        $query = '?id='.$turnaj_id;
+    } else {
+        $path = $BASE_URL.'/prezidentsky-pohar.php';
+        $query = '';
+    }
+}
+
 header('Location: '.$path.$query, true, 303);
 exit;

@@ -54,6 +54,19 @@ function _liga_id_from_cislo(mysqli $conn, int $cislo): ?int {
 function _safe_liga_id(): int {
     global $conn;
 
+    // Dynamické odkazy podporují libovolný počet lig bez PHP wrapperu.
+    if (isset($_GET['liga_id'])) {
+        $v = (int)$_GET['liga_id'];
+        if ($v > 0) {
+            $st = $conn->prepare('SELECT id FROM ligy WHERE id = ? LIMIT 1');
+            $st->bind_param('i', $v);
+            $st->execute();
+            $ok = (int)($st->get_result()->fetch_assoc()['id'] ?? 0);
+            $st->close();
+            if ($ok) return $ok;
+        }
+    }
+
     // 1) explicitní ?cislo=
     if (isset($_GET['cislo'])) {
         $id = _liga_id_from_cislo($conn, (int)$_GET['cislo']);

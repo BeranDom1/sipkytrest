@@ -1,6 +1,8 @@
 /vendor/
 /node_modules/
 .env
+.vm/
 *.log
 /config/db.local.php
 /config/db.production.php
+/database/backups/

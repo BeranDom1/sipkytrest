@@ -1,11 +1,48 @@
 <?php
 // www/liga-app/prezidentsky-pohar.php
+$BASE_URL = '/liga-app';
+
+// Pojistka pro příchod z archivního ročníku: pokud má nově zvolená
+// sezona turnaj v novém systému, přesměruj na jeho skutečnou stránku
+// ještě před vykreslením hlavičky.
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    $isHttps = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => $BASE_URL,
+        'secure'   => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+    session_start();
+}
+
+require_once __DIR__.'/db.php';
+
+$selected_rocnik_id = (int)($_SESSION['rocnik_id'] ?? 0);
+if ($selected_rocnik_id > 0) {
+    $new_turnaj_id = 0;
+    $st = $conn->prepare('SELECT id FROM turnaje WHERE rocnik_id=? ORDER BY id DESC LIMIT 1');
+    if ($st) {
+        $st->bind_param('i', $selected_rocnik_id);
+        $st->execute();
+        $st->bind_result($found_turnaj_id);
+        if ($st->fetch()) $new_turnaj_id = (int)$found_turnaj_id;
+        $st->close();
+    }
+
+    if ($new_turnaj_id > 0) {
+        header('Location: '.$BASE_URL.'/pohar/pohar_turnaj.php?id='.$new_turnaj_id, true, 302);
+        exit;
+    }
+}
+
 require __DIR__.'/header.php';
 require __DIR__.'/common.php';
 
 $rocnik_id = _active_rocnik_id($conn);
 $turnaj = $conn->query("SELECT * FROM prezidentsky_turnaj WHERE rocnik_id={$rocnik_id} ORDER BY id DESC LIMIT 1")->fetch_assoc();
-if (!$turnaj) { echo "<div class='notice'>Turnaj zatím není založen.</div>"; require __DIR__.'/footer.php'; exit; }
+if (!$turnaj) { echo "<div class='notice'>V tomto ročníku se Prezidentský pohár nehrál.</div>"; require __DIR__.'/footer.php'; exit; }
 $turnaj_id = (int)$turnaj['id'];
 
 $stages = [
