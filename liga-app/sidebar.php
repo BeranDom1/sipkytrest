@@ -160,7 +160,7 @@ $st->close();
 
     <li class="nav-item">
       <a class="nav-link ps-4"
-         href="<?= $base ?>/docs/pravidla.pdf"
+         href="<?= $base ?>/docs/pravidla.pdf?v=20260909"
          target="_blank" rel="noopener">
         Pravidla (PDF)
       </a>

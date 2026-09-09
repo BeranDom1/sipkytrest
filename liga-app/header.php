@@ -314,7 +314,7 @@ if (($_SESSION['role'] ?? '') === 'admin') {
       <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/rezervace.php">Rezervace terčů</a>
       <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/kompletni-statistiky.php">Kompletní statistiky</a>
         <a class="nk-mm-item" href="<?= htmlspecialchars($prezidentskyPoharUrl) ?>">Prezidentský pohár</a>
-  <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/docs/pravidla.pdf?v=20260114" target="_blank" rel="noopener">Pravidla (PDF)</a>
+  <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/docs/pravidla.pdf?v=20260909" target="_blank" rel="noopener">Pravidla (PDF)</a>
 
       <a class="nk-mm-item" href="https://sipkytrest.cz">Zpět na sipkytrest.cz</a>
     </div>

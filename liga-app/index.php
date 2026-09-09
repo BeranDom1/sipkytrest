@@ -211,7 +211,7 @@ $st->close();
     </ul>
 
     <ul class="bullets">
-        <li><a href="<?= $base ?>/docs/pravidla.pdf?v=20260114" target="_blank" rel="noopener">Odkaz na pravidla ligy pro nejnovější sezonu</a></li>
+        <li><a href="<?= $base ?>/docs/pravidla.pdf?v=20260909" target="_blank" rel="noopener">Odkaz na pravidla ligy pro nejnovější sezonu</a></li>
         <li>Vše je navrženo tak, aby byl přehled jednoduchý i na mobilních zařízeních.</li>
         <li>Stránka na Androidu by měla nabídnout stažení funkční aplikace.</li>
         <li>Zápasy se doplňují průběžně.</li>
