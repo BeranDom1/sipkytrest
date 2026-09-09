@@ -126,7 +126,7 @@ require __DIR__.'/header.php';
     <h4>🕓 Otevírací doba Sport Baru</h4>
     <ul>
       <li><strong>Středa – Sobota</strong></li>
-      <li>16:00 – 22:00</li>
+      <li>17:00 – 22:00</li>
     </ul>
   </div>
 
@@ -312,6 +312,29 @@ require __DIR__.'/header.php';
   }
 }
 
+/* Kontrast rezervací v tmavém režimu, včetně mobilního sloupce Čas. */
+html[data-theme=dark] .opening-box,
+html[data-theme=dark] .rez-table th,
+html[data-theme=dark] .rez-table .rez-time,
+html[data-theme=dark] .rez-table th:first-child,
+html[data-theme=dark] .rez-table td:first-child{
+  background:#1b292f;
+  color:var(--nk-text);
+  border-color:var(--nk-border);
+}
+html[data-theme=dark] .opening-cenkov{
+  background:#332c1d;
+  border-color:#806a38;
+}
+html[data-theme=dark] .opening-box .hint{color:var(--nk-muted)}
+html[data-theme=dark] .rez-table td{border-color:var(--nk-border)}
+html[data-theme=dark] .rez-day-nav a{background:#203b41;color:#8ed8df}
+html[data-theme=dark] .slot-free{background:#17392f;color:var(--nk-text)}
+html[data-theme=dark] .slot-busy{background:#203b41;color:var(--nk-text)}
+html[data-theme=dark] .slot-disabled{background:#1b292f;color:var(--nk-muted)}
+html[data-theme=dark] .slot-free input::placeholder{color:var(--nk-muted);opacity:1}
+html[data-theme=dark] .slot-free button{background:#267342;color:#fff}
+html[data-theme=dark] .slot-busy button{background:#b33126;color:#fff}
 </style>
 
 <?php require __DIR__.'/footer.php'; ?>
