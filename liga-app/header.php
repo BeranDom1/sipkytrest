@@ -232,6 +232,7 @@ if (!isset($hideRocnikDropdown)) {
 
       <nav class="nk-nav">
         <a href="<?= htmlspecialchars($BASE_URL) ?>/index.php" class="nk-link">Domů</a>
+        <a href="<?= htmlspecialchars($BASE_URL) ?>/rezervace.php" class="nk-link">Rezervace terčů</a>
         <button type="button" class="nk-theme-toggle" data-theme-toggle aria-label="Přepnout na tmavý režim" title="Přepnout barevný režim"><span aria-hidden="true">☾</span><span class="nk-theme-toggle__text">Tmavý režim</span></button>
 
         <?php if (empty($hideRocnikDropdown)): ?>
@@ -310,6 +311,7 @@ if (($_SESSION['role'] ?? '') === 'admin') {
 
     <div class="nk-mm-stack">
       <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/index.php">Přehled</a>
+      <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/rezervace.php">Rezervace terčů</a>
       <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/kompletni-statistiky.php">Kompletní statistiky</a>
         <a class="nk-mm-item" href="<?= htmlspecialchars($prezidentskyPoharUrl) ?>">Prezidentský pohár</a>
   <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/docs/pravidla.pdf?v=20260114" target="_blank" rel="noopener">Pravidla (PDF)</a>
