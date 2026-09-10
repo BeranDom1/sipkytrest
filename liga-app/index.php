@@ -148,7 +148,7 @@ $st->close();
 
     <div class="league-progress">
         <?php foreach ($leagueRows as $r): ?>
-            <a class="league-row" href="<?= $base ?>/ligy/<?= (int)$r['id'] ?>.liga.php">
+            <a class="league-row" href="<?= $base ?>/liga.php?liga_id=<?= (int)$r['id'] ?>">
                 <div class="league-meta">
                     <span class="league-title"><?= htmlspecialchars($r['nazev']) ?></span>
                     <span class="badge"><?= (int)$r['played'] ?> / <?= (int)$r['total'] ?></span>
