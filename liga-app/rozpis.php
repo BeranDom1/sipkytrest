@@ -51,8 +51,6 @@ function rr_schedule(array $ids): array {
             if ($a !== 0 && $b !== 0) {
                 if ($a > $b) { $t=$a; $a=$b; $b=$t; }
                 $pairs[] = [$a, $b];
-            } elseif ($a !== 0 || $b !== 0) {
-                $pairs[] = [$a ?: $b, 0];
             }
         }
         $rounds[] = $pairs;
@@ -113,9 +111,8 @@ $nadpis = 'Rozpis – '._liga_name($conn, $liga_id).' – '._rocnik_name($conn, 
           </thead>
           <tbody>
             <?php foreach ($pairs as [$a,$b]):
-                $isBye = $b === 0;
                 $k = "$a-$b";
-                $m = $isBye ? null : ($matchMap[$k] ?? null);
+                $m = $matchMap[$k] ?? null;
 
                 // necháme původní hodnoty (mohou být NULL)
                 $s1 = $m['skore1'] ?? null;
@@ -130,12 +127,10 @@ $nadpis = 'Rozpis – '._liga_name($conn, $liga_id).' – '._rocnik_name($conn, 
                   <?= $hasScore ? (((int)$s1).' : '.((int)$s2)) : '—' ?>
                 </td>
                 <td data-label="Hráč 2" style="text-align:right">
-                  <?= $isBye ? '<strong>VOLNO</strong>' : htmlspecialchars($players[$b] ?? ('#'.$b)) ?>
+                  <?= htmlspecialchars($players[$b] ?? ('#'.$b)) ?>
                 </td>
                 <td data-label="Detail" style="text-align:center">
-                  <?php if ($isBye): ?>
-                    <span class="badge">Volné kolo</span>
-                  <?php elseif ($m): ?>
+                  <?php if ($m): ?>
                     <?php if (!$hasScore && $canEdit): ?>
                       <a href="<?= htmlspecialchars($BASE_URL) ?>/zapas.php?id=<?= (int)$m['id'] ?>&edit=1">Zadat výsledek</a>
                     <?php else: ?>
