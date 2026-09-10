@@ -3,43 +3,71 @@
 require __DIR__ . '/header.php';   // načte session + $conn + $BASE_URL
 require_once __DIR__ . '/common.php';
 
-// ===== 1) Bezpečně načti zápas jen podle ID =====
+// ===== 1) Načti existující zápas, nebo připrav nový bez zápisu do DB =====
 $matchId = (int)($_GET['id'] ?? 0);
-if ($matchId <= 0) {
-    echo '<div class="alert alert-danger">Neplatné ID zápasu.</div>';
-    require __DIR__.'/footer.php'; exit;
-}
+$isNew = $matchId <= 0 && (($_GET['new'] ?? '') === '1');
 
-$sql = "
-SELECT
-  z.id, z.datum, z.liga_id, z.rocnik_id,
-  z.hrac1_id, z.hrac2_id,
-  z.skore1, z.skore2,
-  z.average_home, z.average_away,
-  z.high_finish_home, z.high_finish_away,
-  z.count_100p_home, z.count_100p_away,
-  z.count_120p_home, z.count_120p_away,
-  z.count_140p_home, z.count_140p_away,
-  z.count_160p_home, z.count_160p_away,
-  z.count_180_home,  z.count_180_away,
-  u1.jmeno AS hrac1,
-  u2.jmeno AS hrac2,
-  l.cislo AS liga_cislo               -- ⬅ číslo ligy pro zobrazení (0 u Nulté)
-FROM zapasy z
-LEFT JOIN hraci_unikatni_jmena u1 ON u1.libovolne_id = z.hrac1_id
-LEFT JOIN hraci_unikatni_jmena u2 ON u2.libovolne_id = z.hrac2_id
-LEFT JOIN ligy l ON l.id = z.liga_id  -- ⬅ přidán JOIN na ligy
-WHERE z.id = ?
-LIMIT 1";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param('i', $matchId);
-$stmt->execute();
-$z = $stmt->get_result()->fetch_assoc();
-$stmt->close();
+if ($isNew) {
+    $newSeason = (int)($_GET['rocnik_id'] ?? 0);
+    $newLeague = (int)($_GET['liga_id'] ?? 0);
+    $newA = (int)($_GET['a'] ?? 0);
+    $newB = (int)($_GET['b'] ?? 0);
+    $newRound = (int)($_GET['kolo'] ?? 0);
+    if ($newA > $newB) { $tmp = $newA; $newA = $newB; $newB = $tmp; }
 
-if (!$z) {
-    echo '<div class="alert alert-danger">Neplatné ID zápasu.</div>';
-    require __DIR__.'/footer.php'; exit;
+    if ($newSeason <= 0 || $newLeague <= 0 || $newA <= 0 || $newB <= 0
+        || $newA === $newB || $newRound <= 0
+        || !_season_can_edit_matches($conn, $newSeason, (string)($_SESSION['role'] ?? ''))) {
+        echo '<div class="alert alert-danger">Neplatné údaje zápasu.</div>';
+        require __DIR__.'/footer.php'; exit;
+    }
+
+    $stmt = $conn->prepare(
+        'SELECT u1.jmeno AS hrac1, u2.jmeno AS hrac2, l.cislo AS liga_cislo
+           FROM ligy l
+           JOIN hraci_v_sezone hs1 ON hs1.rocnik_id=? AND hs1.liga_id=l.id AND hs1.hrac_id=?
+           JOIN hraci_v_sezone hs2 ON hs2.rocnik_id=? AND hs2.liga_id=l.id AND hs2.hrac_id=?
+           JOIN hraci_unikatni_jmena u1 ON u1.libovolne_id=hs1.hrac_id
+           JOIN hraci_unikatni_jmena u2 ON u2.libovolne_id=hs2.hrac_id
+          WHERE l.id=? LIMIT 1'
+    );
+    $stmt->bind_param('iiiii', $newSeason, $newA, $newSeason, $newB, $newLeague);
+    $stmt->execute();
+    $players = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if (!$players) {
+        echo '<div class="alert alert-danger">Hráči do této ligy a sezóny nepatří.</div>';
+        require __DIR__.'/footer.php'; exit;
+    }
+
+    $z = array_merge($players, [
+        'id' => 0, 'datum' => null, 'liga_id' => $newLeague, 'rocnik_id' => $newSeason,
+        'hrac1_id' => $newA, 'hrac2_id' => $newB, 'skore1' => null, 'skore2' => null,
+        'average_home' => null, 'average_away' => null,
+        'high_finish_home' => null, 'high_finish_away' => null,
+        'count_100p_home' => null, 'count_100p_away' => null,
+        'count_120p_home' => null, 'count_120p_away' => null,
+        'count_140p_home' => null, 'count_140p_away' => null,
+        'count_160p_home' => null, 'count_160p_away' => null,
+        'count_180_home' => null, 'count_180_away' => null,
+        'kolo' => $newRound,
+    ]);
+} else {
+    $sql = "SELECT z.*, u1.jmeno AS hrac1, u2.jmeno AS hrac2, l.cislo AS liga_cislo
+              FROM zapasy z
+              LEFT JOIN hraci_unikatni_jmena u1 ON u1.libovolne_id = z.hrac1_id
+              LEFT JOIN hraci_unikatni_jmena u2 ON u2.libovolne_id = z.hrac2_id
+              LEFT JOIN ligy l ON l.id = z.liga_id
+             WHERE z.id = ? LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param('i', $matchId);
+    $stmt->execute();
+    $z = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if (!$z) {
+        echo '<div class="alert alert-danger">Neplatné ID zápasu.</div>';
+        require __DIR__.'/footer.php'; exit;
+    }
 }
 
 // ===== 2) Liga/Ročník bereme z DB záznamu =====
@@ -49,7 +77,7 @@ $liga_cislo  = isset($z['liga_cislo']) ? (int)$z['liga_cislo'] : $liga_id; // fa
 
 // ===== 3) Práva a edit mód =====
 $isEditor = _season_can_edit_matches($conn, $rocnik_id, $_SESSION['role'] ?? '');
-$editMode = $isEditor && (($_GET['edit'] ?? '0') === '1');
+$editMode = $isEditor && ($isNew || (($_GET['edit'] ?? '0') === '1'));
 
 // ===== 4) Bezpečné výstupy / helpery =====
 $h1    = htmlspecialchars((string)$z['hrac1']);
@@ -58,6 +86,13 @@ $datum = htmlspecialchars((string)($z['datum'] ?? ''));
 $rocnik= $rocnik_id;
 function nf($v){ return number_format((float)$v, 2, ',', ''); }
 function iv($v){ return (int)$v; }
+function input_value($v){ return $v === null ? '' : htmlspecialchars((string)$v); }
+function display_number($v, bool $decimal = false){
+    if ($v === null) return '—';
+    return $decimal ? nf($v) : (string)iv($v);
+}
+$winningScore = _league_winning_score($conn, $liga_id, $rocnik_id);
+$hasStoredResult = !$isNew && ($z['skore1'] !== null || $z['skore2'] !== null);
 ?>
 <section class="match-detail">
 <style>
@@ -65,6 +100,9 @@ function iv($v){ return (int)$v; }
   .match-actions{margin:.5rem 0 1rem;display:flex;gap:.5rem}
   .btn{display:inline-block;padding:.5rem .75rem;border:1px solid #e5e7eb;border-radius:10px;background:#fff;text-decoration:none;color:#0d47a1}
   .btn:hover{background:#eef4ff}
+  .match-actions form{margin:0}
+  .btn.btn-danger{border-color:#b42332;background:#b42332;color:#fff}
+  .btn.btn-danger:hover{background:#8f1c28;color:#fff}
 
   /* Respektuj <colgroup> a rozděl zbytek 50/50 pro score sloupce */
   .match-table{
@@ -224,17 +262,32 @@ function iv($v){ return (int)$v; }
   <?php if ($isEditor): ?>
     <div class="match-actions">
       <?php if ($editMode): ?>
-        <a class="btn" href="<?= htmlspecialchars($BASE_URL) ?>/zapas.php?id=<?= $matchId ?>">Hotovo</a>
+        <a class="btn" href="<?= htmlspecialchars($BASE_URL) ?>/rozpis.php?liga_id=<?= $liga_id ?>">Zrušit a zpět na rozpis</a>
       <?php else: ?>
         <a class="btn" href="<?= htmlspecialchars($BASE_URL) ?>/zapas.php?id=<?= $matchId ?>&edit=1">Upravit</a>
+      <?php endif; ?>
+      <?php if ($hasStoredResult): ?>
+        <form method="post" action="<?= htmlspecialchars($BASE_URL) ?>/delete_match.php"
+              onsubmit="return confirm('Opravdu chcete smazat celý výsledek zápasu?');">
+          <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'] ?? '') ?>">
+          <input type="hidden" name="match_id" value="<?= $matchId ?>">
+          <button type="submit" class="btn btn-danger">Smazat výsledek</button>
+        </form>
       <?php endif; ?>
     </div>
   <?php endif; ?>
 
   <?php if ($editMode): ?>
-  <form method="post" action="<?= htmlspecialchars($BASE_URL) ?>/save_stats.php">
+  <form id="match-result-form" data-winning-score="<?= $winningScore ?>" method="post" action="<?= htmlspecialchars($BASE_URL) ?>/save_stats.php">
     <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'] ?? '') ?>">
     <input type="hidden" name="match_id" value="<?= $matchId ?>">
+    <?php if ($isNew): ?>
+      <input type="hidden" name="rocnik_id" value="<?= $rocnik_id ?>">
+      <input type="hidden" name="liga_id" value="<?= $liga_id ?>">
+      <input type="hidden" name="a" value="<?= (int)$z['hrac1_id'] ?>">
+      <input type="hidden" name="b" value="<?= (int)$z['hrac2_id'] ?>">
+      <input type="hidden" name="kolo" value="<?= (int)$z['kolo'] ?>">
+    <?php endif; ?>
   <?php endif; ?>
   <div class="table-wrap match-table-wrap">
     <table class="table match-table<?= $editMode ? ' is-edit' : '' ?>">
@@ -254,117 +307,144 @@ function iv($v){ return (int)$v; }
 
             <tr>
               <td>Skóre</td>
-              <td><input type="number" name="skore1" min="0" max="7" value="<?= iv($z['skore1']) ?>"></td>
+              <td><input type="number" name="skore1" min="0" max="<?= $winningScore ?>" required value="<?= input_value($z['skore1']) ?>"></td>
               <td>:</td>
-              <td><input type="number" name="skore2" min="0" max="7" value="<?= iv($z['skore2']) ?>"></td>
+              <td><input type="number" name="skore2" min="0" max="<?= $winningScore ?>" required value="<?= input_value($z['skore2']) ?>"></td>
             </tr>
 
             <tr>
               <td>Průměr</td>
-              <td><input type="number" step="0.01" min="0" max="180" name="average_home" value="<?= (float)$z['average_home'] ?>"></td>
+              <td><input type="number" step="0.01" min="0" max="180" name="average_home" value="<?= input_value($z['average_home']) ?>"></td>
               <td></td>
-              <td><input type="number" step="0.01" min="0" max="180" name="average_away" value="<?= (float)$z['average_away'] ?>"></td>
+              <td><input type="number" step="0.01" min="0" max="180" name="average_away" value="<?= input_value($z['average_away']) ?>"></td>
             </tr>
 
             <tr>
               <td>Nejvyšší zavření</td>
-              <td><input type="number" min="0" max="170" name="high_finish_home" value="<?= iv($z['high_finish_home']) ?>"></td>
+              <td><input type="number" min="0" max="170" name="high_finish_home" value="<?= input_value($z['high_finish_home']) ?>"></td>
               <td></td>
-              <td><input type="number" min="0" max="170" name="high_finish_away" value="<?= iv($z['high_finish_away']) ?>"></td>
+              <td><input type="number" min="0" max="170" name="high_finish_away" value="<?= input_value($z['high_finish_away']) ?>"></td>
             </tr>
 
             <tr>
               <td>100+</td>
-              <td><input type="number" min="0" max="99" name="count_100p_home" value="<?= iv($z['count_100p_home']) ?>"></td>
+              <td><input type="number" min="0" max="99" name="count_100p_home" value="<?= input_value($z['count_100p_home']) ?>"></td>
               <td></td>
-              <td><input type="number" min="0" max="99" name="count_100p_away" value="<?= iv($z['count_100p_away']) ?>"></td>
+              <td><input type="number" min="0" max="99" name="count_100p_away" value="<?= input_value($z['count_100p_away']) ?>"></td>
             </tr>
               <tr>
               <td>120+</td>
-              <td><input type="number" min="0" max="99" name="count_120p_home" value="<?= iv($z['count_120p_home']) ?>"></td>
+              <td><input type="number" min="0" max="99" name="count_120p_home" value="<?= input_value($z['count_120p_home']) ?>"></td>
               <td></td>
-              <td><input type="number" min="0" max="99" name="count_120p_away" value="<?= iv($z['count_120p_away']) ?>"></td>
+              <td><input type="number" min="0" max="99" name="count_120p_away" value="<?= input_value($z['count_120p_away']) ?>"></td>
             </tr>
             <tr>
               <td>140+</td>
-              <td><input type="number" min="0" max="99" name="count_140p_home" value="<?= iv($z['count_140p_home']) ?>"></td>
+              <td><input type="number" min="0" max="99" name="count_140p_home" value="<?= input_value($z['count_140p_home']) ?>"></td>
               <td></td>
-              <td><input type="number" min="0" max="99" name="count_140p_away" value="<?= iv($z['count_140p_away']) ?>"></td>
+              <td><input type="number" min="0" max="99" name="count_140p_away" value="<?= input_value($z['count_140p_away']) ?>"></td>
             </tr>
             <tr>
               <td>160+</td>
-              <td><input type="number" min="0" max="99" name="count_160p_home" value="<?= iv($z['count_160p_home']) ?>"></td>
+              <td><input type="number" min="0" max="99" name="count_160p_home" value="<?= input_value($z['count_160p_home']) ?>"></td>
               <td></td>
-              <td><input type="number" min="0" max="99" name="count_160p_away" value="<?= iv($z['count_160p_away']) ?>"></td>
+              <td><input type="number" min="0" max="99" name="count_160p_away" value="<?= input_value($z['count_160p_away']) ?>"></td>
             </tr>
             <tr>
               <td>180+</td>
-              <td><input type="number" min="0" max="99" name="count_180_home" value="<?= iv($z['count_180_home']) ?>"></td>
+              <td><input type="number" min="0" max="99" name="count_180_home" value="<?= input_value($z['count_180_home']) ?>"></td>
               <td></td>
-              <td><input type="number" min="0" max="99" name="count_180_away" value="<?= iv($z['count_180_away']) ?>"></td>
+              <td><input type="number" min="0" max="99" name="count_180_away" value="<?= input_value($z['count_180_away']) ?>"></td>
             </tr>
 
             <tr>
               <td></td>
               <td colspan="2" style="text-align:right">
-                <a class="btn" href="<?= htmlspecialchars($BASE_URL) ?>/zapas.php?id=<?= $matchId ?>">Zrušit</a>
+                <a class="btn" href="<?= htmlspecialchars($BASE_URL) ?>/rozpis.php?liga_id=<?= $liga_id ?>">Zrušit a zpět na rozpis</a>
                 <button type="submit" class="btn">Uložit</button>
               </td>
             </tr>
         <?php else: ?>
           <tr>
             <td>Skóre</td>
-            <td><?= iv($z['skore1']) ?></td>
+            <td><?= display_number($z['skore1']) ?></td>
             <td>:</td>
-            <td><?= iv($z['skore2']) ?></td>
+            <td><?= display_number($z['skore2']) ?></td>
           </tr>
           <tr>
             <td>Průměr</td>
-            <td><?= nf($z['average_home']) ?></td>
+            <td><?= display_number($z['average_home'], true) ?></td>
             <td></td>
-            <td><?= nf($z['average_away']) ?></td>
+            <td><?= display_number($z['average_away'], true) ?></td>
           </tr>
           <tr>
             <td>Nejvyšší zavření</td>
-            <td><?= iv($z['high_finish_home']) ?></td>
+            <td><?= display_number($z['high_finish_home']) ?></td>
             <td></td>
-            <td><?= iv($z['high_finish_away']) ?></td>
+            <td><?= display_number($z['high_finish_away']) ?></td>
           </tr>
           <tr>
             <td>100+</td>
-            <td><?= iv($z['count_100p_home']) ?></td>
+            <td><?= display_number($z['count_100p_home']) ?></td>
             <td></td>
-            <td><?= iv($z['count_100p_away']) ?></td>
+            <td><?= display_number($z['count_100p_away']) ?></td>
           </tr>
            <tr>
             <td>120+</td>
-            <td><?= iv($z['count_120p_home']) ?></td>
+            <td><?= display_number($z['count_120p_home']) ?></td>
             <td></td>
-            <td><?= iv($z['count_120p_away']) ?></td>
+            <td><?= display_number($z['count_120p_away']) ?></td>
           </tr>
           <tr>
             <td>140+</td>
-            <td><?= iv($z['count_140p_home']) ?></td>
+            <td><?= display_number($z['count_140p_home']) ?></td>
             <td></td>
-            <td><?= iv($z['count_140p_away']) ?></td>
+            <td><?= display_number($z['count_140p_away']) ?></td>
           </tr>
           <tr>
             <td>160+</td>
-            <td><?= iv($z['count_160p_home']) ?></td>
+            <td><?= display_number($z['count_160p_home']) ?></td>
             <td></td>
-            <td><?= iv($z['count_160p_away']) ?></td>
+            <td><?= display_number($z['count_160p_away']) ?></td>
           </tr>
           <tr>
             <td>180+</td>
-            <td><?= iv($z['count_180_home']) ?></td>
+            <td><?= display_number($z['count_180_home']) ?></td>
             <td></td>
-            <td><?= iv($z['count_180_away']) ?></td>
+            <td><?= display_number($z['count_180_away']) ?></td>
           </tr>
         <?php endif; ?>
       </tbody>
     </table>
   </div>
-  <?php if ($editMode): ?></form><?php endif; ?>
+  <?php if ($editMode): ?>
+    </form>
+    <script>
+    (function () {
+      const form = document.getElementById('match-result-form');
+      if (!form) return;
+      const first = form.elements.skore1;
+      const second = form.elements.skore2;
+      const target = Number(form.dataset.winningScore);
+      const message = `Platný výsledek je ${target}:0 až ${target}:${target - 1} nebo obráceně. Remíza není možná.`;
+
+      function validateScore() {
+        first.setCustomValidity('');
+        second.setCustomValidity('');
+        if (first.value === '' || second.value === '') return;
+        const a = Number(first.value);
+        const b = Number(second.value);
+        const valid = (a === target && b >= 0 && b < target)
+          || (b === target && a >= 0 && a < target);
+        if (!valid) second.setCustomValidity(message);
+      }
+
+      first.addEventListener('input', validateScore);
+      second.addEventListener('input', validateScore);
+      form.addEventListener('submit', validateScore);
+    }());
+    </script>
+  <?php endif; ?>
 </section>
 <?php require __DIR__ . '/footer.php'; ?>
 <style>

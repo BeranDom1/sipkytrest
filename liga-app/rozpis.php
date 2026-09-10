@@ -86,11 +86,16 @@ $st->close();
  * -----------------------------------------------------------------*/
 $pids   = array_keys($players);         // už je seřazeno podle jména
 $rounds = rr_schedule($pids);
+$winningScore = _league_winning_score($conn, $liga_id, $rocnik_id);
 
 $nadpis = 'Rozpis – '._liga_name($conn, $liga_id).' – '._rocnik_name($conn, $rocnik_id);
 ?>
 <main id="content" class="nk-content nk-content--flat">
   <h2><?= htmlspecialchars($nadpis) ?></h2>
+
+  <?php if (($_GET['deleted'] ?? '') === '1'): ?>
+    <div class="alert alert-success">Výsledek zápasu byl smazán.</div>
+  <?php endif; ?>
 
   <?php if (!$players): ?>
     <p>V téhle lize zatím nejsou zapsaní žádní hráči.</p>
@@ -118,8 +123,8 @@ $nadpis = 'Rozpis – '._liga_name($conn, $liga_id).' – '._rocnik_name($conn, 
                 $s1 = $m['skore1'] ?? null;
                 $s2 = $m['skore2'] ?? null;
 
-                // má-li se skóre počítat: musí být ne-NULL a ne 0:0
-                $hasScore = ($s1 !== null && $s2 !== null && ((int)$s1 !== 0 || (int)$s2 !== 0));
+                $hasScore = $s1 !== null && $s2 !== null
+                    && _match_score_is_valid((int)$s1, (int)$s2, $winningScore);
             ?>
               <tr>
                 <td data-label="Hráč 1"><?= htmlspecialchars($players[$a] ?? ('#'.$a)) ?></td>
@@ -132,7 +137,7 @@ $nadpis = 'Rozpis – '._liga_name($conn, $liga_id).' – '._rocnik_name($conn, 
                 <td data-label="Detail" style="text-align:center">
                   <?php if ($m): ?>
                     <?php if (!$hasScore && $canEdit): ?>
-                      <a href="<?= htmlspecialchars($BASE_URL) ?>/zapas.php?id=<?= (int)$m['id'] ?>&edit=1">Zadat výsledek</a>
+                      <a class="btn btn-sm" href="<?= htmlspecialchars($BASE_URL) ?>/zapas.php?id=<?= (int)$m['id'] ?>&edit=1">Zadat výsledek</a>
                     <?php else: ?>
                       <a href="<?= htmlspecialchars($BASE_URL) ?>/zapas.php?id=<?= (int)$m['id'] ?>">Detail</a>
                     <?php endif; ?>
@@ -140,9 +145,10 @@ $nadpis = 'Rozpis – '._liga_name($conn, $liga_id).' – '._rocnik_name($conn, 
                     <form action="<?= htmlspecialchars($BASE_URL) ?>/zapas_create.php" method="post" style="display:inline">
                       <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrfRozpis) ?>">
                       <input type="hidden" name="rocnik_id" value="<?= (int)$rocnik_id ?>">
-                     <input type="hidden" name="liga_id"   value="<?= (int)$liga_id ?>">
+                      <input type="hidden" name="liga_id"   value="<?= (int)$liga_id ?>">
                       <input type="hidden" name="a"         value="<?= (int)$a ?>">
                       <input type="hidden" name="b"         value="<?= (int)$b ?>">
+                      <input type="hidden" name="kolo"      value="<?= $i + 1 ?>">
                       <button type="submit" class="btn btn-sm">Zadat výsledek</button>
                     </form>
                   <?php else: ?>

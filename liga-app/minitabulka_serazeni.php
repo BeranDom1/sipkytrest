@@ -27,7 +27,8 @@ function porovnej_vzajemny_zapas(array $a, array $b, mysqli $conn, int $rocnik_i
     $m = $st->get_result()->fetch_assoc();
     $st->close();
 
-    if (!$m || (int)$m['skore1'] === (int)$m['skore2']) {
+    $winningScore = $liga_id !== null ? _league_winning_score($conn, $liga_id, $rocnik_id) : 7;
+    if (!$m || !_match_score_is_valid((int)$m['skore1'], (int)$m['skore2'], $winningScore)) {
         return 0;
     }
 
@@ -107,6 +108,10 @@ function serad_hrace_s_rovnymi_body(array $rows, mysqli $conn, int $rocnik_id, i
             $pocetMinitabulkovychZapasu = 0;
 
             while ($z = $res->fetch_assoc()) {
+                $winningScore = $liga_id !== null ? _league_winning_score($conn, $liga_id, $rocnik_id) : 7;
+                if (!_match_score_is_valid((int)$z['skore1'], (int)$z['skore2'], $winningScore)) {
+                    continue;
+                }
                 $pocetMinitabulkovychZapasu++;
 
                 if ($z['skore1'] > $z['skore2']) {

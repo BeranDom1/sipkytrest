@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/../common.php';
 require_once __DIR__ . '/_auth.php';
 require_once __DIR__ . '/season_helpers.php';
 
@@ -10,12 +11,13 @@ if (!$active) {
 $activeId = (int)($active['id'] ?? 0);
 $stats = ['leagues' => 0, 'players' => 0, 'matches' => 0, 'played' => 0];
 if ($activeId > 0) {
+    $validScoreSql = _valid_match_score_sql($conn, $activeId, '');
     $stmt = $conn->prepare(
         'SELECT
           (SELECT COUNT(DISTINCT liga_id) FROM hraci_v_sezone WHERE rocnik_id = ?) leagues,
           (SELECT COUNT(*) FROM hraci_v_sezone WHERE rocnik_id = ?) players,
           (SELECT COUNT(*) FROM zapasy WHERE rocnik_id = ?) matches,
-          (SELECT COUNT(*) FROM zapasy WHERE rocnik_id = ? AND skore1 IS NOT NULL AND skore2 IS NOT NULL) played'
+          (SELECT COUNT(*) FROM zapasy WHERE rocnik_id = ? AND '.$validScoreSql.') played'
     );
     $stmt->bind_param('iiii', $activeId, $activeId, $activeId, $activeId);
     $stmt->execute();

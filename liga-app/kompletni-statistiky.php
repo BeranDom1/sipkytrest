@@ -3,6 +3,7 @@ require __DIR__.'/header.php';
 require __DIR__.'/common.php';
 
 $rocnik_id = _active_rocnik_id($conn);
+$validScoreSql = _valid_match_score_sql($conn, $rocnik_id, 'z');
 $nadpis = 'Kompletní statistiky – '._rocnik_name($conn, $rocnik_id);
 
 // Pokud je ročník Podzim 2024 (id=1), statistiky nezobrazujeme
@@ -106,7 +107,9 @@ JOIN ligy l
   ON l.id = hs.liga_id
 LEFT JOIN zapasy z
   ON z.rocnik_id = ?
+ AND z.liga_id = hs.liga_id
  AND (z.hrac1_id = u.libovolne_id OR z.hrac2_id = u.libovolne_id)
+ AND $validScoreSql
 
 GROUP BY u.libovolne_id, u.jmeno, hs.liga_id, l.nazev, l.cislo
 ORDER BY prumer DESC, u.jmeno ASC

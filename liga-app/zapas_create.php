@@ -46,8 +46,9 @@ $rocnik_id = (int)($_POST['rocnik_id'] ?? 0);
 $liga_id   = (int)($_POST['liga_id']   ?? 0);
 $a         = (int)($_POST['a'] ?? 0);
 $b         = (int)($_POST['b'] ?? 0);
+$kolo      = (int)($_POST['kolo'] ?? 0);
 
-if ($rocnik_id<=0 || $liga_id<=0 || $a<=0 || $b<=0 || $a === $b) {
+if ($rocnik_id<=0 || $liga_id<=0 || $a<=0 || $b<=0 || $a === $b || $kolo<=0) {
     http_response_code(400);
     exit('Chybné vstupy.');
 }
@@ -73,19 +74,10 @@ $st->close();
 if ($ex) {
     $matchId = (int)$ex['id'];
 } else {
-    // založit nový řádek (skóre NULL; lze prefiltrovat na 0:0 – viz poznámka níže)
-    $st = $conn->prepare(
-        "INSERT INTO zapasy (rocnik_id, liga_id, hrac1_id, hrac2_id)
-         VALUES (?,?,?,?)"
-    );
-    $st->bind_param('iiii', $rocnik_id, $liga_id, $a, $b);
-    if (!$st->execute()) {
-        http_response_code(500);
-        exit('Nelze založit zápas: '.$st->error);
-    }
-    // DŮLEŽITÉ: ID ber z připojení, ne ze statementu
-    $matchId = (int)$conn->insert_id;
-    $st->close();
+    // Zápas zatím nevytvářej. Vznikne teprve po uložení platného výsledku.
+    header('Location: '.$BASE_URL.'/zapas.php?new=1&edit=1&rocnik_id='.$rocnik_id
+        .'&liga_id='.$liga_id.'&a='.$a.'&b='.$b.'&kolo='.$kolo);
+    exit;
 }
 
 // ---- přesměruj rovnou do editace ----

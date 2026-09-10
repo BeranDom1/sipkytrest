@@ -30,6 +30,49 @@ function _season_can_edit_matches(mysqli $conn, int $rocnik_id, string $role): b
     return in_array($role, ['admin', 'stat_editor'], true);
 }
 
+/** Počet legů potřebný k vítězství v ligovém zápase. */
+function _league_winning_score(mysqli $conn, int $liga_id, int $rocnik_id): int {
+    $name = _liga_name($conn, $liga_id, $rocnik_id);
+
+    // ID 6 je historická ženská liga; nové ženské skupiny poznáme podle názvu.
+    return $liga_id === 6 || preg_match('~žen~iu', $name) ? 5 : 7;
+}
+
+/** Platný konečný výsledek: právě jeden vítěz dosáhl cíle, poražený zůstal pod ním. */
+function _match_score_is_valid(int $skore1, int $skore2, int $winningScore): bool {
+    return ($skore1 === $winningScore && $skore2 >= 0 && $skore2 < $winningScore)
+        || ($skore2 === $winningScore && $skore1 >= 0 && $skore1 < $winningScore);
+}
+
+/** SQL podmínka shodná s validací formuláře pro všechny ligy dané sezóny. */
+function _valid_match_score_sql(mysqli $conn, int $rocnik_id, string $alias = 'z'): string {
+    if ($alias !== '' && !preg_match('~^[a-z_][a-z0-9_]*$~i', $alias)) {
+        throw new InvalidArgumentException('Neplatný SQL alias.');
+    }
+    $prefix = $alias === '' ? '' : $alias.'.';
+    $targets = [];
+    $st = $conn->prepare(
+        'SELECT l.id FROM ligy l LEFT JOIN ligy_nazvy ln ON ln.liga_id=l.id AND ln.rocnik_id=? ORDER BY l.id'
+    );
+    $st->bind_param('i', $rocnik_id);
+    $st->execute();
+    $res = $st->get_result();
+    while ($row = $res->fetch_assoc()) {
+        $leagueId = (int)$row['id'];
+        $targets[_league_winning_score($conn, $leagueId, $rocnik_id)][] = $leagueId;
+    }
+    $st->close();
+
+    $conditions = [];
+    foreach ($targets as $target => $leagueIds) {
+        $ids = implode(',', array_map('intval', $leagueIds));
+        $target = (int)$target;
+        $loserMax = $target - 1;
+        $conditions[] = "({$prefix}liga_id IN ($ids) AND (({$prefix}skore1=$target AND {$prefix}skore2 BETWEEN 0 AND $loserMax) OR ({$prefix}skore2=$target AND {$prefix}skore1 BETWEEN 0 AND $loserMax)))";
+    }
+    return $conditions ? '('.implode(' OR ', $conditions).')' : '0=1';
+}
+
 // Přeloží číslo ligy (0..5) na skutečné ligy.id
 function _liga_id_from_cislo(mysqli $conn, int $cislo): ?int {
     if ($cislo < 0) $cislo = 0;

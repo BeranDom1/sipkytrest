@@ -1384,6 +1384,20 @@ html[data-theme=dark] .table--league tbody tr:nth-last-child(-n+2) td,
 html[data-theme=dark] .table--league tbody tr:nth-child(1) a,
 html[data-theme=dark] .table--league tbody tr:nth-child(2) a,
 html[data-theme=dark] .table--league tbody tr:nth-last-child(-n+2) a{color:#142529!important}
+
+/* Živý přehled play-off je informační tabulka bez barev pořadí. */
+.women-playoff-preview .table--playoff tbody tr,
+.women-playoff-preview .table--playoff tbody tr:nth-child(1),
+.women-playoff-preview .table--playoff tbody tr:nth-child(2),
+.women-playoff-preview .table--playoff tbody tr:nth-last-child(-n+2){background:transparent!important;color:inherit!important}
+.women-playoff-preview .table--playoff tbody td,
+.women-playoff-preview .table--playoff tbody a{color:inherit!important}
+html[data-theme=dark] .women-playoff-preview .table--playoff tbody tr,
+html[data-theme=dark] .women-playoff-preview .table--playoff tbody tr:nth-child(1),
+html[data-theme=dark] .women-playoff-preview .table--playoff tbody tr:nth-child(2),
+html[data-theme=dark] .women-playoff-preview .table--playoff tbody tr:nth-last-child(-n+2){background:var(--nk-surface)!important;color:var(--nk-text)!important}
+html[data-theme=dark] .women-playoff-preview .table--playoff tbody td,
+html[data-theme=dark] .women-playoff-preview .table--playoff tbody a{color:var(--nk-text)!important}
 @media(min-width:1024px){
   html[data-theme=dark] .nk-sidebar a{color:#aebfc4!important}
   html[data-theme=dark] .nk-sidebar a:hover{color:#dff8fa!important;background:#203b41!important}
