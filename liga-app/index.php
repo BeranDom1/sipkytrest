@@ -1,6 +1,7 @@
 <?php
 $hideRocnikDropdown = false;
 include './header.php'; // Obsahuje <html>, <body>, $BASE_URL, $conn
+require_once __DIR__ . '/common.php';
 
 /**
  * ============================================================================
