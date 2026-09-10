@@ -26,7 +26,7 @@ SELECT
   u.jmeno                          AS jmeno,
 
   hs.liga_id                       AS liga_id,
-  l.nazev                          AS liga_nazev,
+  COALESCE(ln.nazev, l.nazev)      AS liga_nazev,
   l.cislo                          AS liga_cislo,
 
   -- Počítej jen odehrané: ne-NULL a ne 0:0
@@ -105,28 +105,45 @@ JOIN hraci_v_sezone hs
  AND hs.rocnik_id = ?
 JOIN ligy l
   ON l.id = hs.liga_id
+LEFT JOIN ligy_nazvy ln
+  ON ln.liga_id = hs.liga_id
+ AND ln.rocnik_id = ?
 LEFT JOIN zapasy z
   ON z.rocnik_id = ?
  AND z.liga_id = hs.liga_id
  AND (z.hrac1_id = u.libovolne_id OR z.hrac2_id = u.libovolne_id)
  AND $validScoreSql
 
-GROUP BY u.libovolne_id, u.jmeno, hs.liga_id, l.nazev, l.cislo
+GROUP BY u.libovolne_id, u.jmeno, hs.liga_id, COALESCE(ln.nazev, l.nazev), l.cislo
 ORDER BY prumer DESC, u.jmeno ASC
 ";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param('ii', $rocnik_id, $rocnik_id);
+$stmt->bind_param('iii', $rocnik_id, $rocnik_id, $rocnik_id);
 $stmt->execute();
 $res = $stmt->get_result();
 $rows = [];
 while ($r = $res->fetch_assoc()) $rows[] = $r;
 $stmt->close();
 
-// Liga s interním ID/číslem 6 je historicky ženská liga, nikoli šestá liga.
-function liga_label(int $ligaId, int $cislo): string
+/** Krátké a jednotné označení ligy pro sloupec kompletních statistik. */
+function liga_label(int $ligaId, int $cislo, string $nazev): string
 {
-  return $ligaId === 6 ? 'Ženy' : $cislo . '.';
+  $group = '';
+  if (preg_match('~sk\.?\s*([AB])~iu', $nazev, $match)) {
+    $group = strtoupper($match[1]);
+  }
+
+  if ($ligaId === 6 || preg_match('~žen~iu', $nazev)) {
+    return 'Ženy' . ($group !== '' ? ' ' . $group : '');
+  }
+
+  $leagueNumber = $cislo;
+  if (preg_match('~(\d+)\.\s*liga~iu', $nazev, $match)) {
+    $leagueNumber = (int)$match[1];
+  }
+
+  return $leagueNumber . '. liga' . ($group !== '' ? ' ' . $group : '');
 }
 ?>
 <main id="content" class="nk-content nk-content--flat">
@@ -151,7 +168,7 @@ function liga_label(int $ligaId, int $cislo): string
           <tr>
             <td><?= $i++ ?>.</td>
             <td><?= htmlspecialchars($r['jmeno']) ?></td>
-            <td><?= htmlspecialchars(liga_label((int)$r['liga_id'], (int)$r['liga_cislo'])) ?></td>
+            <td><?= htmlspecialchars(liga_label((int)$r['liga_id'], (int)$r['liga_cislo'], (string)$r['liga_nazev'])) ?></td>
             <td style="text-align:center"><?= (int)($r['zapasy'] ?? 0) ?></td>
             <td style="text-align:center"><?= is_null($r['prumer']) ? '—' : number_format((float)$r['prumer'], 2, ',', ' ') ?></td>
             <td style="text-align:center"><?= is_null($r['nejvyssi_zavreni']) ? '—' : (int)$r['nejvyssi_zavreni'] ?></td>
