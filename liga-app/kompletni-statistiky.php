@@ -135,7 +135,7 @@ function liga_label(int $ligaId, int $cislo, string $nazev): string
   }
 
   if ($ligaId === 6 || preg_match('~žen~iu', $nazev)) {
-    return 'Ženy' . ($group !== '' ? ' ' . $group : '');
+    return 'Ž.' . $group;
   }
 
   $leagueNumber = $cislo;
@@ -143,7 +143,7 @@ function liga_label(int $ligaId, int $cislo, string $nazev): string
     $leagueNumber = (int)$match[1];
   }
 
-  return $leagueNumber . '. liga' . ($group !== '' ? ' ' . $group : '');
+  return $leagueNumber . '.' . $group;
 }
 ?>
 <main id="content" class="nk-content nk-content--flat">
