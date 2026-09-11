@@ -44,6 +44,33 @@ function _match_score_is_valid(int $skore1, int $skore2, int $winningScore): boo
         || ($skore2 === $winningScore && $skore1 >= 0 && $skore1 < $winningScore);
 }
 
+/** Jaro 2026 historicky obsahuje remízy na cílovém skóre, které starý web zobrazoval. */
+function _season_uses_legacy_tied_scores(mysqli $conn, int $rocnik_id): bool {
+    static $cache = [];
+    if (array_key_exists($rocnik_id, $cache)) return $cache[$rocnik_id];
+
+    $st = $conn->prepare('SELECT nazev FROM rocniky WHERE id=? LIMIT 1');
+    $st->bind_param('i', $rocnik_id);
+    $st->execute();
+    $name = trim((string)($st->get_result()->fetch_assoc()['nazev'] ?? ''));
+    $st->close();
+    return $cache[$rocnik_id] = ($name === 'Jaro 2026');
+}
+
+/** Výsledek zobrazovaný ve statistikách: platný výsledek, plus zachované historické remízy Jara 2026. */
+function _match_score_is_reportable(
+    mysqli $conn,
+    int $rocnik_id,
+    int $skore1,
+    int $skore2,
+    int $winningScore
+): bool {
+    return _match_score_is_valid($skore1, $skore2, $winningScore)
+        || (_season_uses_legacy_tied_scores($conn, $rocnik_id)
+            && $skore1 === $winningScore
+            && $skore2 === $winningScore);
+}
+
 /** SQL podmínka shodná s validací formuláře pro všechny ligy dané sezóny. */
 function _valid_match_score_sql(mysqli $conn, int $rocnik_id, string $alias = 'z'): string {
     if ($alias !== '' && !preg_match('~^[a-z_][a-z0-9_]*$~i', $alias)) {
@@ -71,6 +98,38 @@ function _valid_match_score_sql(mysqli $conn, int $rocnik_id, string $alias = 'z
         $conditions[] = "({$prefix}liga_id IN ($ids) AND (({$prefix}skore1=$target AND {$prefix}skore2 BETWEEN 0 AND $loserMax) OR ({$prefix}skore2=$target AND {$prefix}skore1 BETWEEN 0 AND $loserMax)))";
     }
     return $conditions ? '('.implode(' OR ', $conditions).')' : '0=1';
+}
+
+/** SQL filtr pro veřejné historické přehledy; validace nově ukládaného skóre zůstává přísná. */
+function _reportable_match_score_sql(mysqli $conn, int $rocnik_id, string $alias = 'z'): string {
+    $valid = _valid_match_score_sql($conn, $rocnik_id, $alias);
+    if (!_season_uses_legacy_tied_scores($conn, $rocnik_id)) return $valid;
+
+    if ($alias !== '' && !preg_match('~^[a-z_][a-z0-9_]*$~i', $alias)) {
+        throw new InvalidArgumentException('Neplatný SQL alias.');
+    }
+    $prefix = $alias === '' ? '' : $alias.'.';
+    $legacy = [];
+    $st = $conn->prepare(
+        'SELECT l.id FROM ligy l LEFT JOIN ligy_nazvy ln ON ln.liga_id=l.id AND ln.rocnik_id=? ORDER BY l.id'
+    );
+    $st->bind_param('i', $rocnik_id);
+    $st->execute();
+    $res = $st->get_result();
+    while ($row = $res->fetch_assoc()) {
+        $leagueId = (int)$row['id'];
+        $target = _league_winning_score($conn, $leagueId, $rocnik_id);
+        $legacy[$target][] = $leagueId;
+    }
+    $st->close();
+
+    $tieConditions = [];
+    foreach ($legacy as $target => $leagueIds) {
+        $ids = implode(',', array_map('intval', $leagueIds));
+        $target = (int)$target;
+        $tieConditions[] = "({$prefix}liga_id IN ($ids) AND {$prefix}skore1=$target AND {$prefix}skore2=$target)";
+    }
+    return $tieConditions ? "($valid OR (".implode(' OR ', $tieConditions).'))' : $valid;
 }
 
 // Přeloží číslo ligy (0..5) na skutečné ligy.id

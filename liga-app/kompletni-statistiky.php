@@ -3,7 +3,7 @@ require __DIR__.'/header.php';
 require __DIR__.'/common.php';
 
 $rocnik_id = _active_rocnik_id($conn);
-$validScoreSql = _valid_match_score_sql($conn, $rocnik_id, 'z');
+$validScoreSql = _reportable_match_score_sql($conn, $rocnik_id, 'z');
 $nadpis = 'Kompletní statistiky – '._rocnik_name($conn, $rocnik_id);
 
 // Pokud je ročník Podzim 2024 (id=1), statistiky nezobrazujeme

@@ -35,7 +35,7 @@ function load_league_standings(mysqli $conn, int $seasonId, int $leagueId): arra
 
     if (!$stats) return [];
 
-    $validScoreSql = _valid_match_score_sql($conn, $seasonId, 'z');
+    $validScoreSql = _reportable_match_score_sql($conn, $seasonId, 'z');
     $sql = "SELECT z.hrac1_id, z.hrac2_id, z.skore1, z.skore2
               FROM zapasy z
              WHERE z.rocnik_id=? AND z.liga_id=? AND $validScoreSql";
@@ -58,7 +58,7 @@ function load_league_standings(mysqli $conn, int $seasonId, int $leagueId): arra
             $stats[$home]['V']++;
             $stats[$away]['P']++;
             $stats[$home]['body'] += 2;
-        } else {
+        } elseif ($awayScore > $homeScore) {
             $stats[$away]['V']++;
             $stats[$home]['P']++;
             $stats[$away]['body'] += 2;

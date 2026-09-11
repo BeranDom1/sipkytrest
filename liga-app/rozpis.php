@@ -124,7 +124,7 @@ $nadpis = 'Rozpis – '._liga_name($conn, $liga_id).' – '._rocnik_name($conn, 
                 $s2 = $m['skore2'] ?? null;
 
                 $hasScore = $s1 !== null && $s2 !== null
-                    && _match_score_is_valid((int)$s1, (int)$s2, $winningScore);
+                    && _match_score_is_reportable($conn, $rocnik_id, (int)$s1, (int)$s2, $winningScore);
             ?>
               <tr>
                 <td data-label="Hráč 1"><?= htmlspecialchars($players[$a] ?? ('#'.$a)) ?></td>

@@ -52,8 +52,8 @@ $season         = detect_active_season($conn);
 $rocnik_id      = (int)$season['id'];
 $nazev_rocniku  = (string)$season['nazev'];
 $base           = $BASE_URL ?? '/liga-app';
-$validScoreSql = _valid_match_score_sql($conn, $rocnik_id, '');
-$validJoinedScoreSql = _valid_match_score_sql($conn, $rocnik_id, 'z');
+$validScoreSql = _reportable_match_score_sql($conn, $rocnik_id, '');
+$validJoinedScoreSql = _reportable_match_score_sql($conn, $rocnik_id, 'z');
 // Celkem skutečně odehraných zápasů podle cílového skóre každé ligy.
 $st = $conn->prepare("SELECT COUNT(*) AS c FROM zapasy WHERE rocnik_id = ? AND $validScoreSql");
 $st->bind_param('i', $rocnik_id);

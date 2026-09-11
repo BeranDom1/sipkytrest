@@ -11,7 +11,7 @@ if (!$active) {
 $activeId = (int)($active['id'] ?? 0);
 $stats = ['leagues' => 0, 'players' => 0, 'matches' => 0, 'played' => 0];
 if ($activeId > 0) {
-    $validScoreSql = _valid_match_score_sql($conn, $activeId, '');
+    $validScoreSql = _reportable_match_score_sql($conn, $activeId, '');
     $stmt = $conn->prepare(
         'SELECT
           (SELECT COUNT(DISTINCT liga_id) FROM hraci_v_sezone WHERE rocnik_id = ?) leagues,
