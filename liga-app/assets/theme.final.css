@@ -1398,6 +1398,12 @@ html[data-theme=dark] .women-playoff-preview .table--playoff tbody tr:nth-child(
 html[data-theme=dark] .women-playoff-preview .table--playoff tbody tr:nth-last-child(-n+2){background:var(--nk-surface)!important;color:var(--nk-text)!important}
 html[data-theme=dark] .women-playoff-preview .table--playoff tbody td,
 html[data-theme=dark] .women-playoff-preview .table--playoff tbody a{color:var(--nk-text)!important}
+
+/* Play-off tabulka nesmí zdědit tmavý text z barev prvních/posledních řádků ligy. */
+html[data-theme=dark] .women-playoff-preview .table.table--league.table--playoff tbody tr td,
+html[data-theme=dark] .women-playoff-preview .table.table--league.table--playoff tbody tr td a{
+  color:var(--nk-text)!important;
+}
 @media(min-width:1024px){
   html[data-theme=dark] .nk-sidebar a{color:#aebfc4!important}
   html[data-theme=dark] .nk-sidebar a:hover{color:#dff8fa!important;background:#203b41!important}
