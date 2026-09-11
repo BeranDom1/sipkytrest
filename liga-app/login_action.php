@@ -20,7 +20,9 @@ function safe_next(string $url, string $default) : string {
     // dovol jen interní cesty pod /liga-app
     $u = parse_url($url);
     if (!$u || !empty($u['scheme']) || !empty($u['host'])) return $default;
-    if (empty($u['path']) || strpos($u['path'], '/liga-app') !== 0) return $default;
+    $path = $u['path'] ?? '';
+    if ($path !== '/liga-app' && strpos($path, '/liga-app/') !== 0) return $default;
+    if ($path === '/liga-app/login.php') return $default;
     return $url;
 }
 

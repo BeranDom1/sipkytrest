@@ -252,11 +252,15 @@ if (!isset($hideRocnikDropdown)) {
         <?php endif; ?>
 
              <!-- Přihlášení/odhlášení – DESKTOP (na mobilu se .nk-link skrývají v CSS) -->
+        <?php
+          $currentRequestUri = $_SERVER['REQUEST_URI'] ?? ($BASE_URL.'/index.php');
+          $loginHref = $BASE_URL.'/login.php?next='.rawurlencode($currentRequestUri);
+        ?>
         <?php if ($username): ?>
           <span class="nk-link" style="opacity:.85;cursor:default">Přihlášen: <?= htmlspecialchars($username) ?></span>
           <a href="<?= htmlspecialchars($BASE_URL) ?>/logout.php" class="nk-link">Odhlásit</a>
         <?php else: ?>
-          <a href="<?= htmlspecialchars($BASE_URL) ?>/login.php" class="nk-link">Přihlásit</a>
+          <a href="<?= htmlspecialchars($loginHref) ?>" class="nk-link">Přihlásit</a>
         <?php endif; ?>
         <?php
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
@@ -291,7 +295,7 @@ if (($_SESSION['role'] ?? '') === 'admin') {
         <div class="nk-user">Přihlášen: <?= htmlspecialchars($username) ?></div>
         <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/logout.php">Odhlásit</a>
       <?php else: ?>
-        <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/login.php">Přihlásit</a>
+        <a class="nk-mm-item" href="<?= htmlspecialchars($loginHref) ?>">Přihlásit</a>
       <?php endif; ?>
     </div>
 

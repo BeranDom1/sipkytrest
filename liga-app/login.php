@@ -4,18 +4,25 @@ require_once __DIR__.'/security/csrf.php';
 
 // -------- Bezpečné určení návratové adresy --------
 $base = $BASE_URL ?? '/liga-app';                               // z header.php
-$nextRaw = $_GET['next'] ?? ($_SERVER['HTTP_REFERER'] ?? $base.'/');
-$path    = parse_url($nextRaw, PHP_URL_PATH) ?? $base.'/';
+$nextRaw = (string)($_GET['next'] ?? ($_SERVER['HTTP_REFERER'] ?? $base.'/'));
+$parsed  = parse_url($nextRaw);
+$path    = is_array($parsed) ? ($parsed['path'] ?? '') : '';
 
-// dovol jen cesty v rámci aplikace a nevracej se na login
-if (strpos($path, $base) !== 0) {
-    $path = $base.'/';
-}
+// Dovol jen interní cestu v rámci aplikace a zachovej její query parametry
+// (např. id zápasu). Externí URL ani podobný prefix typu /liga-app-foo neprojdou.
+$isInternal = is_array($parsed)
+    && empty($parsed['scheme'])
+    && empty($parsed['host'])
+    && ($path === $base || strpos($path, rtrim($base, '/').'/') === 0);
 $loginPath = rtrim($base,'/').'/login.php';
-if ($path === $loginPath) {
-    $path = $base.'/';
+if (!$isInternal || $path === $loginPath) {
+    $next = $base.'/';
+} else {
+    $next = $path;
+    if (!empty($parsed['query'])) {
+        $next .= '?'.$parsed['query'];
+    }
 }
-$next = $path;
 
 $csrf = csrf_token();
 ?>
