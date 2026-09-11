@@ -154,7 +154,7 @@ $placeholderMap[$z['next_match_id']][$z['next_slot']] =
 
 ?>
 
-<link rel="stylesheet" href="/liga-app/pohar/pohar.css?v=20260911">
+<link rel="stylesheet" href="/liga-app/pohar/pohar.css?v=<?= (int)@filemtime(__DIR__.'/pohar.css') ?>">
 <script src="/liga-app/pohar/pohar.js" defer></script>
 
 <div class="turnaj-page"> 

@@ -62,7 +62,7 @@ $players = $conn->query("
 <head>
 <meta charset="utf-8">
 <title>Správa hráčů</title>
-<link rel="stylesheet" href="/liga-app/style.css?v=20260911">
+<link rel="stylesheet" href="/liga-app/style.css?v=<?= (int)@filemtime(dirname(__DIR__).'/style.css') ?>">
 <style>
 .card{border:1px solid #ddd;padding:1rem;border-radius:12px;max-width:720px;margin:2rem auto;background:#fff}
 label{display:block;margin:.6rem 0 .2rem}
@@ -73,7 +73,7 @@ input{width:100%;padding:.4rem}
 table{width:100%;border-collapse:collapse;margin-top:1rem}
 th,td{padding:.35rem;border-bottom:1px solid #eee;text-align:left}
 </style>
-  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=<?= (int)@filemtime(dirname(__DIR__).'/assets/admin-theme.css') ?>">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>

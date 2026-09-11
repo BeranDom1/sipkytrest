@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['save']) && hash_equals(
 <head>
 <meta charset="utf-8">
 <title>PP – první kolo</title>
-<link rel="stylesheet" href="/liga-app/style.css?v=20260911">
+<link rel="stylesheet" href="/liga-app/style.css?v=<?= (int)@filemtime(dirname(__DIR__).'/style.css') ?>">
 <style>
 .card{border:1px solid #ddd;padding:1rem;border-radius:12px;max-width:1100px;margin:2rem auto;background:#fff}
 .btn{padding:.5rem .9rem;border-radius:10px;border:1px solid #333;background:#111;color:#fff;cursor:pointer}
@@ -78,7 +78,7 @@ table{width:100%;border-collapse:collapse}
 th,td{border-bottom:1px solid #eef2f7;padding:.35rem .5rem}
 .flex{display:flex;gap:.5rem}
 </style>
-  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=<?= (int)@filemtime(dirname(__DIR__).'/assets/admin-theme.css') ?>">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>

@@ -64,7 +64,7 @@ $csrf = csrf_token();
 <html lang="cs">
 <head><meta charset="utf-8"><title>Vytvořit admina</title>
 <meta name="robots" content="noindex,nofollow">
-<link rel="stylesheet" href="<?= $BASE_URL ?>/style.css?v=20260911">
+<link rel="stylesheet" href="<?= $BASE_URL ?>/style.css?v=<?= (int)@filemtime(__DIR__.'/style.css') ?>">
 <style>
 .box{max-width:420px;margin:3rem auto;background:#fff;border:1px solid #ddd;border-radius:12px;padding:1rem}
 label{display:block;margin-top:.6rem}

@@ -201,9 +201,9 @@ $seasons = $conn->query(
 $csrf = csrf_token();
 ?>
 <!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=<?= (int)@filemtime(dirname(__DIR__).'/assets/admin-theme.css') ?>">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
-<title>Správa sezón</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=20260911"></head>
+<title>Správa sezón</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=<?= (int)@filemtime(dirname(__DIR__).'/assets/admin.css') ?>"></head>
 <body class="admin-body"><main class="admin-shell">
   <div class="admin-top"><a href="/liga-app/admin/index.php">← Administrace</a><a href="/liga-app/index.php">Veřejná část</a></div>
   <h1 class="admin-title">Správa sezón</h1>

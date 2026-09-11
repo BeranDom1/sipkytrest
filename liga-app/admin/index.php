@@ -25,9 +25,9 @@ if ($activeId > 0) {
     $stmt->close();
 }
 ?>
-  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=<?= (int)@filemtime(dirname(__DIR__).'/assets/admin-theme.css') ?>">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
-<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administrace</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=20260911"></head>
+<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administrace</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=<?= (int)@filemtime(dirname(__DIR__).'/assets/admin.css') ?>"></head>
 <body class="admin-body"><main class="admin-shell">
   <div class="admin-top"><a href="/liga-app/index.php">← Veřejná část</a><a href="/liga-app/logout.php">Odhlásit</a></div>
   <h1 class="admin-title">Administrace</h1><p class="admin-subtitle">Aktivní sezóna: <strong><?= htmlspecialchars($active['nazev'] ?? 'není nastavena') ?></strong></p>

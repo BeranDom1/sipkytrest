@@ -108,7 +108,7 @@ if (!isset($hideRocnikDropdown)) {
     })();
   </script>
 
-  <link rel="stylesheet" href="<?= htmlspecialchars($BASE_URL) ?>/assets/theme.final.css?v=20260911">
+  <link rel="stylesheet" href="<?= htmlspecialchars($BASE_URL) ?>/assets/theme.final.css?v=<?= (int)@filemtime(__DIR__.'/assets/theme.final.css') ?>">
   <link rel="manifest" href="/liga-app/manifest.webmanifest?v=3">
   <link rel="apple-touch-icon" href="/liga-app/icons/sipky-192.png">
 <meta name="mobile-web-app-capable" content="yes">

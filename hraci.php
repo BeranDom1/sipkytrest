@@ -40,7 +40,7 @@ if ($result) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260911">
+    <link rel="stylesheet" href="style.css?v=<?= (int)@filemtime(__DIR__.'/style.css') ?>">
 </head>
 
 <body>

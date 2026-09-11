@@ -10,9 +10,4 @@ Options -Indexes
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
 
-    # CSS se smí uložit lokálně, ale prohlížeč musí před použitím ověřit aktuální verzi.
-    <FilesMatch "(?i)\.css$">
-        Header always set Cache-Control "no-cache, must-revalidate"
-        Header always set Expires "0"
-    </FilesMatch>
 </IfModule>
