@@ -53,7 +53,7 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES,'UTF-8'); }
 <head>
 <meta charset="utf-8">
 <title>Administrace – Prezidentský pohár</title>
-<link rel="stylesheet" href="/liga-app/style.css">
+<link rel="stylesheet" href="/liga-app/style.css?v=20260911">
 <style>
 .card{border:1px solid #ddd;padding:1rem;border-radius:12px;max-width:900px;margin:2rem auto;background:#fff}
 .btn{padding:.5rem .9rem;border-radius:10px;border:1px solid #333;background:#111;color:#fff;cursor:pointer}
@@ -61,7 +61,7 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES,'UTF-8'); }
 select,input[type=text],input[type=number]{padding:.35rem .5rem;border:1px solid #dfe3ea;border-radius:8px}
 .form-row{display:grid;grid-template-columns: 1fr 1fr;gap:.75rem}
 </style>
-  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>

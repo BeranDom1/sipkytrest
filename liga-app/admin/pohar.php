@@ -496,7 +496,7 @@ $roundLabels = [1=>'1. kolo', 2=>'2. kolo', 3=>'Osmifinále', 4=>'Čtvrtfinále'
 $csrf = csrf_token();
 ?>
 <!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Správa Prezidentského poháru</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=2"><link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1"><script src="/liga-app/assets/admin-theme.js?v=1"></script>
+<title>Správa Prezidentského poháru</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=20260911"><link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911"><script src="/liga-app/assets/admin-theme.js?v=1"></script>
 <style>.pohar-player{display:grid;grid-template-columns:auto 1fr 90px minmax(105px,auto);gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--admin-border)}.pohar-player input[type=number]{width:90px}.pohar-bye{display:flex;align-items:center;gap:6px;font-weight:700}.pohar-terms{display:grid;gap:8px}.pohar-term{display:grid;gap:8px}.admin-field textarea{width:100%;min-height:92px;border:1px solid var(--admin-border);border-radius:11px;padding:10px 12px;font:inherit}.admin-help{color:var(--admin-muted);font-size:.9rem}.admin-danger-zone{border-color:#efb6bd}@media(max-width:600px){.pohar-player{grid-template-columns:auto 1fr 90px}.pohar-bye{grid-column:2/4}}@media(min-width:720px){.pohar-term{grid-template-columns:minmax(160px,1fr) 2fr}}</style>
 </head><body class="admin-body"><main class="admin-shell">
 <div class="admin-top"><a href="/liga-app/admin/index.php">← Administrace</a><a href="/liga-app/index.php">Veřejná část</a></div>

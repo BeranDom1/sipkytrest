@@ -52,8 +52,8 @@ $csrf = csrf_token();
 ?>
 <!doctype html><meta charset="utf-8">
 <title>Rozřazení – <?= htmlspecialchars($sezona_nazev) ?></title>
-<link rel="stylesheet" href="/liga-app/style.css">
-<link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+<link rel="stylesheet" href="/liga-app/style.css?v=20260911">
+<link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
 <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 <style>
 .grid{display:grid;grid-template-columns:repeat(3,minmax(260px,1fr));gap:12px}

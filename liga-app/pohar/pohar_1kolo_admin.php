@@ -70,8 +70,8 @@ function h($value): string { return htmlspecialchars((string)$value, ENT_QUOTES,
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Ruční los prvního kola</title>
-  <link rel="stylesheet" href="/liga-app/assets/admin.css?v=2">
-  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <link rel="stylesheet" href="/liga-app/assets/admin.css?v=20260911">
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
   <style>
     .draw-list{display:grid;gap:10px}.draw-match{display:grid;grid-template-columns:70px minmax(180px,1fr) auto minmax(180px,1fr) auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--admin-border);border-radius:12px}.draw-match select{width:100%}.draw-vs{text-align:center;font-weight:800}.draw-summary{display:flex;gap:16px;flex-wrap:wrap}.draw-summary strong{font-size:1.15rem}@media(max-width:720px){.draw-match{grid-template-columns:1fr}.draw-vs{text-align:left}.draw-match .admin-btn{width:100%}}

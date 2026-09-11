@@ -82,7 +82,7 @@ $csrf = csrf_token();
 <head>
 <meta charset="utf-8">
 <title>Názvy lig podle ročníku</title>
-<link rel="stylesheet" href="/liga-app/style.css">
+<link rel="stylesheet" href="/liga-app/style.css?v=20260911">
 <style>
 .card{border:1px solid #ddd;padding:1rem;border-radius:12px;max-width:760px;margin:2rem auto;background:#fff}
 label{display:block;margin:.6rem 0 .2rem}
@@ -91,7 +91,7 @@ input{width:100%;padding:.4rem}
 .msg{color:#0a0}
 .err{color:#c00}
 </style>
-  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>

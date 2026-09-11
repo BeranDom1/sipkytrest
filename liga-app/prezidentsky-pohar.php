@@ -71,7 +71,7 @@ $q->execute();
 $res = $q->get_result();
 while ($row = $res->fetch_assoc()) { $byStage[$row['stage']][] = $row; }
 ?>
-<link rel="stylesheet" href="<?= htmlspecialchars($BASE_URL) ?>/assets/pp.css?v=3">
+<link rel="stylesheet" href="<?= htmlspecialchars($BASE_URL) ?>/assets/pp.css?v=20260911">
 <?php if (!empty($_SESSION['pp_err'])): ?>
   <div class="notice error"><?= htmlspecialchars($_SESSION['pp_err']) ?></div>
   <?php unset($_SESSION['pp_err']); ?>

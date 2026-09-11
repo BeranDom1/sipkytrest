@@ -61,7 +61,7 @@ $csrf = csrf_token();
 <html lang="cs">
 <head><meta charset="utf-8"><title>Vytvořit admina</title>
 <meta name="robots" content="noindex,nofollow">
-<link rel="stylesheet" href="<?= $BASE_URL ?>/style.css">
+<link rel="stylesheet" href="<?= $BASE_URL ?>/style.css?v=20260911">
 <style>
 .box{max-width:420px;margin:3rem auto;background:#fff;border:1px solid #ddd;border-radius:12px;padding:1rem}
 label{display:block;margin-top:.6rem}
@@ -70,7 +70,7 @@ input{width:100%;padding:.5rem}
 .msg{margin-top:1rem;color:#0a0}
 .err{margin-top:1rem;color:#c00}
 </style>
-  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>

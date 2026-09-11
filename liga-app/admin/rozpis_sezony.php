@@ -117,9 +117,9 @@ foreach ($leagueData as $data) {
 }
 $csrf = csrf_token();
 ?>
-  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
-<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kontrola rozpisu</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=1"></head>
+<!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kontrola rozpisu</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=20260911"></head>
 <body class="admin-body"><main class="admin-shell"><div class="admin-top"><a href="/liga-app/admin/sezona.php?rocnik_id=<?= $seasonId ?>">← <?= htmlspecialchars($season['nazev']) ?></a><a href="/liga-app/admin/index.php">Dashboard</a></div>
 <h1 class="admin-title">Kontrola a rozpis</h1><p class="admin-subtitle"><?= htmlspecialchars($season['nazev']) ?> · každý s každým právě jednou</p>
 <?php if ($message): ?><div class="admin-alert admin-alert--success"><?= htmlspecialchars($message) ?></div><?php endif; ?><?php if ($error): ?><div class="admin-alert admin-alert--danger"><?= htmlspecialchars($error) ?></div><?php endif; ?>

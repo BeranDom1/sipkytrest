@@ -198,7 +198,7 @@ $availableStmt->close();
 $csrf = csrf_token();
 ?>
 <!doctype html><html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Správa lig</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=2"><link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1"><script src="/liga-app/assets/admin-theme.js?v=1"></script>
+<title>Správa lig</title><link rel="stylesheet" href="/liga-app/assets/admin.css?v=20260911"><link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911"><script src="/liga-app/assets/admin-theme.js?v=1"></script>
 <style>.league-editor{display:grid;gap:14px}.league-logo-preview{width:100px;height:58px;object-fit:contain;background:#fff;border:1px solid var(--admin-border);border-radius:9px;padding:5px}.league-meta{color:var(--admin-muted)}@media(min-width:760px){.league-editor{grid-template-columns:100px 1fr}.league-editor__form{display:grid;grid-template-columns:2fr 1.2fr 1.4fr auto;gap:10px;align-items:end}.league-editor__actions{grid-column:1/-1}}</style>
 </head><body class="admin-body"><main class="admin-shell">
 <div class="admin-top"><a href="/liga-app/admin/sezona.php?rocnik_id=<?= $seasonId ?>">← <?= league_h($season['nazev']) ?></a><a href="/liga-app/admin/index.php">Dashboard</a></div>

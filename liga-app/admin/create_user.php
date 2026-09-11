@@ -118,7 +118,7 @@ $csrf = csrf_token();
 <head>
 <meta charset="utf-8">
 <title>Správa uživatelů</title>
-<link rel="stylesheet" href="<?= $BASE_URL ?>/style.css">
+<link rel="stylesheet" href="<?= $BASE_URL ?>/style.css?v=20260911">
 <style>
 .box{max-width:920px;margin:2rem auto;background:#fff;border:1px solid #ddd;border-radius:12px;padding:1.2rem}
 table{width:100%;border-collapse:collapse}
@@ -130,7 +130,7 @@ th{background:#f4f4f4}
 .btn.gray{background:#444}
 form.inline{display:inline}
 </style>
-  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=1">
+  <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=20260911">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
 </head>
 <body>
