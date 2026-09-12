@@ -1,5 +1,8 @@
 Options -Indexes
 
+RewriteEngine On
+RewriteRule ^turnaj/([a-z0-9-]+)/?$ liga-app/registrace-turnaje.php?turnaj=$1 [L,QSA]
+
 <FilesMatch "(?i)(^\.|\.(sql|md|log|ini|env|bak|dist|example\.php)$)">
     Require all denied
 </FilesMatch>

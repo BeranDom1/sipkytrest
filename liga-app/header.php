@@ -19,6 +19,9 @@ require_once __DIR__.'/security/csrf.php';
 
 // uživatel (pro login / logout)
 $username = $_SESSION['username'] ?? null;
+$canManageTournamentRegistrations = (($_SESSION['role'] ?? '') === 'admin')
+  || (($_SESSION['role'] ?? '') === 'stat_editor'
+      && hash_equals('sebesta', (string)($_SESSION['username'] ?? '')));
 
 // Výchozí kontext = explicitně aktivní sezóna, ne pouze nejvyšší ID.
 if (empty($_SESSION['rocnik_id'])) {
@@ -266,6 +269,8 @@ if (!isset($hideRocnikDropdown)) {
 if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 if (($_SESSION['role'] ?? '') === 'admin') {
     echo '<a class="nk-admin-link" href="/liga-app/admin/index.php">Admin</a>';
+} elseif ($canManageTournamentRegistrations) {
+    echo '<a class="nk-admin-link" href="/liga-app/admin/registrace-turnaje.php">Registrace turnaje</a>';
 }
 // (máš-li Bootstrap, klidně to obal do <li class="nav-item"><a class="nav-link" ...>…</a></li>)
 ?>
@@ -315,6 +320,7 @@ if (($_SESSION['role'] ?? '') === 'admin') {
 
     <div class="nk-mm-stack">
       <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/index.php">Přehled</a>
+      <?php if ($canManageTournamentRegistrations): ?><a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/admin/registrace-turnaje.php">Správa registrací turnaje</a><?php endif; ?>
       <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/rezervace.php">Rezervace terčů</a>
       <a class="nk-mm-item" href="<?= htmlspecialchars($BASE_URL) ?>/kompletni-statistiky.php">Kompletní statistiky</a>
         <a class="nk-mm-item" href="<?= htmlspecialchars($prezidentskyPoharUrl) ?>">Prezidentský pohár</a>

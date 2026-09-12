@@ -28,6 +28,7 @@ services:
       - ./d377108_liga.sql:/docker-entrypoint-initdb.d/01-database.sql:ro
       - ./database/migrations/2026-08-18-season-workflow.sql:/docker-entrypoint-initdb.d/02-season-workflow.sql:ro
       - ./database/migrations/2026-09-08-presidential-cup-admin.sql:/docker-entrypoint-initdb.d/03-presidential-cup-admin.sql:ro
+      - ./database/migrations/2026-09-12-tournament-registration.sql:/docker-entrypoint-initdb.d/04-tournament-registration.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -uroot -p$$(cat /run/secrets/db_root_password) --silent"]
       interval: 5s
