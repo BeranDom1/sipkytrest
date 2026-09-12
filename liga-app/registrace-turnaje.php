@@ -21,6 +21,7 @@ try {
     zajistiSchemaRegistraci($conn);
 } catch (Throwable $e) {
     error_log('Schéma registrací: '.$e->getMessage());
+    header('X-Registration-Error-Code: '.(string)$e->getCode());
     http_response_code(503);
     exit('Registrace se právě připravuje. Zkuste to prosím později.');
 }

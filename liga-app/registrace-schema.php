@@ -68,14 +68,16 @@ function zajistiSchemaRegistraci(mysqli $conn): void
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_czech_ci",
         ];
         foreach ($statements as $sql) {
-            if (!$conn->query($sql)) throw new RuntimeException('Registrační databázi se nepodařilo připravit.');
+            if (!$conn->query($sql)) {
+                throw new RuntimeException('Registrační databázi se nepodařilo připravit: '.$conn->error, $conn->errno);
+            }
         }
     }
 
     $accommodationColumn = $conn->query("SHOW COLUMNS FROM turnaj_registrace LIKE 'zajem_ubytovani'");
     if (!$accommodationColumn || $accommodationColumn->num_rows === 0) {
         if (!$conn->query('ALTER TABLE turnaj_registrace ADD COLUMN zajem_ubytovani TINYINT(1) NOT NULL DEFAULT 0 AFTER rok_narozeni')) {
-            throw new RuntimeException('Pole pro ubytování se nepodařilo připravit.');
+            throw new RuntimeException('Pole pro ubytování se nepodařilo připravit: '.$conn->error, $conn->errno);
         }
     }
 
@@ -88,7 +90,7 @@ function zajistiSchemaRegistraci(mysqli $conn): void
         $columnResult = $conn->query("SHOW COLUMNS FROM registracni_turnaje LIKE '{$column}'");
         if ((!$columnResult || $columnResult->num_rows === 0)
             && !$conn->query("ALTER TABLE registracni_turnaje ADD COLUMN {$column} {$definition}")) {
-            throw new RuntimeException('Nastavení formuláře se nepodařilo připravit.');
+            throw new RuntimeException('Nastavení formuláře se nepodařilo připravit: '.$conn->error, $conn->errno);
         }
     }
 
@@ -98,7 +100,12 @@ function zajistiSchemaRegistraci(mysqli $conn): void
         '2026-12-12','Celodenní turnaj','Areál SOŠ, SOU Třešť','K Valše 1251, Třešť',192,300,
         'Skupiny po 6 • ceny pro TOP 32 + Lucky Loser • 32 terčů • možnost ubytování • losovací tombola pro platící hráče',
         'prihlasky@sipkytrest.cz','603 723 705','otevrena'");
-    if (!$seed || !$seed->execute()) throw new RuntimeException('Vánoční turnaj se nepodařilo připravit.');
+    if (!$seed) {
+        throw new RuntimeException('Vánoční turnaj se nepodařilo připravit: '.$conn->error, $conn->errno);
+    }
+    if (!$seed->execute()) {
+        throw new RuntimeException('Vánoční turnaj se nepodařilo připravit: '.$seed->error, $seed->errno);
+    }
     $seed->close();
     $ready = true;
 }
