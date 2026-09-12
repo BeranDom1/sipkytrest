@@ -37,6 +37,69 @@ a:hover {
     text-decoration: underline;
 }
 
+/* ÚVODNÍ PLAKÁT */
+.event-modal {
+    width: min(650px, calc(100vw - 2rem));
+    max-width: none;
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+}
+
+.event-modal::backdrop {
+    background: rgba(4, 9, 15, 0.82);
+    backdrop-filter: blur(3px);
+}
+
+.event-modal__panel {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    max-height: calc(100dvh - 2rem);
+}
+
+.event-modal__panel img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    max-height: calc(100dvh - 2rem);
+    object-fit: contain;
+    border-radius: 14px;
+}
+
+.event-modal__close {
+    position: absolute;
+    z-index: 1;
+    top: 0.55rem;
+    right: 0.55rem;
+    display: grid;
+    width: 44px;
+    height: 44px;
+    padding: 0 0 4px;
+    place-items: center;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    border-radius: 50%;
+    background: rgba(5, 10, 15, 0.88);
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+    color: #fff;
+    font: 400 2rem/1 sans-serif;
+    cursor: pointer;
+}
+
+.event-modal__close:hover {
+    background: #b91c1c;
+}
+
+.event-modal__close:focus-visible {
+    outline: 3px solid #f4c95d;
+    outline-offset: 2px;
+}
+
 /* HLAVIČKA / HERO */
 .site-header {
     position: sticky;
