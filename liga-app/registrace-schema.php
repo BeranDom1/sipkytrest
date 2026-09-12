@@ -43,9 +43,7 @@ function zajistiSchemaRegistraci(mysqli $conn): void
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (id), UNIQUE KEY uq_turnaj_registrace_dedupe (turnaj_id,dedupe_key),
-                KEY idx_turnaj_registrace_poradi (turnaj_id,stav,created_at),
-                CONSTRAINT fk_turnaj_registrace_turnaj FOREIGN KEY (turnaj_id)
-                    REFERENCES registracni_turnaje (id) ON DELETE CASCADE
+                KEY idx_turnaj_registrace_poradi (turnaj_id,stav,created_at)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_czech_ci",
             "CREATE TABLE IF NOT EXISTS turnaj_form_pole (
                 id INT UNSIGNED NOT NULL AUTO_INCREMENT, turnaj_id INT UNSIGNED NOT NULL,
@@ -54,17 +52,11 @@ function zajistiSchemaRegistraci(mysqli $conn): void
                 moznosti TEXT NULL, povinne TINYINT(1) NOT NULL DEFAULT 0,
                 zobrazit TINYINT(1) NOT NULL DEFAULT 1, poradi SMALLINT UNSIGNED NOT NULL DEFAULT 0,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (id),
-                KEY idx_turnaj_form_pole_poradi (turnaj_id,poradi,id),
-                CONSTRAINT fk_turnaj_form_pole_turnaj FOREIGN KEY (turnaj_id)
-                    REFERENCES registracni_turnaje (id) ON DELETE CASCADE
+                KEY idx_turnaj_form_pole_poradi (turnaj_id,poradi,id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_czech_ci",
             "CREATE TABLE IF NOT EXISTS turnaj_registrace_hodnoty (
                 registrace_id INT UNSIGNED NOT NULL, pole_id INT UNSIGNED NOT NULL, hodnota TEXT NOT NULL,
-                PRIMARY KEY (registrace_id,pole_id),
-                CONSTRAINT fk_turnaj_registrace_hodnoty_registrace FOREIGN KEY (registrace_id)
-                    REFERENCES turnaj_registrace (id) ON DELETE CASCADE,
-                CONSTRAINT fk_turnaj_registrace_hodnoty_pole FOREIGN KEY (pole_id)
-                    REFERENCES turnaj_form_pole (id) ON DELETE CASCADE
+                PRIMARY KEY (registrace_id,pole_id)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_czech_ci",
         ];
         foreach ($statements as $sql) {

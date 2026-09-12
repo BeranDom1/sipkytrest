@@ -226,6 +226,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if ($action === 'delete_field') {
             $fieldId = (int)($_POST['pole_id'] ?? 0);
+            $stmt = $conn->prepare('DELETE h FROM turnaj_registrace_hodnoty h JOIN turnaj_registrace r ON r.id=h.registrace_id WHERE h.pole_id=? AND r.turnaj_id=?');
+            $stmt->bind_param('ii', $fieldId, $eventId);
+            $stmt->execute();
+            $stmt->close();
             $stmt = $conn->prepare('DELETE FROM turnaj_form_pole WHERE id=? AND turnaj_id=?');
             $stmt->bind_param('ii', $fieldId, $eventId);
             $stmt->execute();
@@ -258,6 +262,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         if ($action === 'delete_registration') {
             $registrationId = (int)($_POST['registrace_id'] ?? 0);
+            $stmt = $conn->prepare('DELETE h FROM turnaj_registrace_hodnoty h JOIN turnaj_registrace r ON r.id=h.registrace_id WHERE h.registrace_id=? AND r.turnaj_id=?');
+            $stmt->bind_param('ii', $registrationId, $eventId);
+            $stmt->execute();
+            $stmt->close();
             $stmt = $conn->prepare('DELETE FROM turnaj_registrace WHERE id=? AND turnaj_id=?');
             $stmt->bind_param('ii', $registrationId, $eventId);
             $stmt->execute();
