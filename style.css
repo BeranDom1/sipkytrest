@@ -183,7 +183,20 @@ a:hover {
     margin: 0;
 }
 
+.hero-logo a {
+    display: inline-block;
+    border-radius: var(--radius-md);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.hero-logo a:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    text-decoration: none;
+}
+
 .logo-image {
+    display: block;
     max-width: 170px;
     width: 100%;
     height: auto;
