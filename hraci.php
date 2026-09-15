@@ -1,43 +1,21 @@
 <?php
 require __DIR__ . "/liga-app/db.php";
-require __DIR__ . "/liga-app/web-players-schema.php";
 
 $hraci = [];
 $nacteniSelhalo = false;
-try {
-    ensureWebPlayersSchema($conn);
-    $result = $conn->query("
-        SELECT s.klubove_cislo, COALESCE(h.jmeno, s.jmeno) AS jmeno,
-               s.prezdivka, s.bydliste, s.vek
-        FROM seznam_hracu_web s
-        LEFT JOIN hraci_unikatni_jmena h ON h.libovolne_id = s.hrac_id
-        WHERE s.zobrazit = 1
-        ORDER BY CAST(s.klubove_cislo AS UNSIGNED), s.klubove_cislo
-    ");
-    if (!$result) {
-        throw new RuntimeException('Databázový dotaz selhal.');
-    }
+$result = $conn->query("
+    SELECT klubove_cislo, jmeno, prezdivka, bydliste, vek
+    FROM seznam_hracu_web
+    WHERE jmeno NOT LIKE '[SKRYTY:%'
+    ORDER BY CAST(klubove_cislo AS UNSIGNED), klubove_cislo
+");
+if ($result) {
     while ($row = $result->fetch_assoc()) {
         $hraci[] = $row;
     }
-} catch (Throwable $exception) {
-    error_log('Šipky Třešť: nepodařilo se načíst veřejný seznam hráčů. '.$exception->getMessage());
-    if (isset($_GET['_web_players_schema'])
-        && hash_equals('588ede3-schema-check', (string)$_GET['_web_players_schema'])) {
-        header('Content-Type: text/plain; charset=utf-8');
-        exit($exception->getMessage());
-    }
-
-    // Při chybě migrace zachováme původní veřejný seznam beze změny.
-    $fallback = $conn->query('SELECT klubove_cislo, jmeno, prezdivka, bydliste, vek
-        FROM seznam_hracu_web ORDER BY klubove_cislo');
-    if ($fallback) {
-        while ($row = $fallback->fetch_assoc()) {
-            $hraci[] = $row;
-        }
-    } else {
-        $nacteniSelhalo = true;
-    }
+} else {
+    $nacteniSelhalo = true;
+    error_log('Šipky Třešť: nepodařilo se načíst veřejný seznam hráčů. '.$conn->error);
 }
 ?>
 
