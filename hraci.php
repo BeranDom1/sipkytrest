@@ -1,22 +1,28 @@
 <?php
 require __DIR__ . "/liga-app/db.php";
-
-$sql = "
-    SELECT klubove_cislo, jmeno, prezdivka
-    FROM seznam_hracu_web
-    ORDER BY klubove_cislo
-";
+require __DIR__ . "/liga-app/web-players-schema.php";
 
 $hraci = [];
 $nacteniSelhalo = false;
-$result = $conn->query($sql);
-if ($result) {
+try {
+    ensureWebPlayersSchema($conn);
+    $result = $conn->query("
+        SELECT s.klubove_cislo, COALESCE(h.jmeno, s.jmeno) AS jmeno,
+               s.prezdivka, s.bydliste, s.vek
+        FROM seznam_hracu_web s
+        LEFT JOIN hraci_unikatni_jmena h ON h.libovolne_id = s.hrac_id
+        WHERE s.zobrazit = 1
+        ORDER BY CAST(s.klubove_cislo AS UNSIGNED), s.klubove_cislo
+    ");
+    if (!$result) {
+        throw new RuntimeException('Databázový dotaz selhal.');
+    }
     while ($row = $result->fetch_assoc()) {
         $hraci[] = $row;
     }
-} else {
+} catch (Throwable $exception) {
     $nacteniSelhalo = true;
-    error_log('Šipky Třešť: nepodařilo se načíst veřejný seznam hráčů.');
+    error_log('Šipky Třešť: nepodařilo se načíst veřejný seznam hráčů. '.$exception->getMessage());
 }
 ?>
 
@@ -48,17 +54,25 @@ if ($result) {
 <header class="site-header">
     <nav class="main-nav" aria-label="Hlavní navigace">
         <ul>
-            <li><a href="/">Domů</a></li>
+            <li><a href="/#vanocni-turnaj-2026">Vánoční turnaj 2026</a></li>
             <li><a href="hraci.php" aria-current="page">Hráči</a></li>
             <li><a href="https://sipkytrest.cz/liga-app" target="_blank" rel="noopener noreferrer">Ligová aplikace</a></li>
             <li><a href="/liga-app/rezervace.php">Rezervace terčů</a></li>
             <li><a href="https://www.stedar.org/alms/league/league.view" target="_blank" rel="noopener noreferrer">Liga Vysočina</a></li>
-            <li><a href="https://www.facebook.com/groups/1075319810414488" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+            <li>
+                <a href="https://www.facebook.com/groups/1075319810414488"
+                   class="main-nav__facebook" target="_blank" rel="noopener noreferrer"
+                   aria-label="Facebook skupina Šipky Třešť" title="Facebook – Šipky Třešť">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M13.7 21v-8h2.7l.4-3.1h-3.1v-2c0-.9.3-1.5 1.6-1.5H17V3.6c-.8-.1-1.6-.2-2.4-.2-2.4 0-4.1 1.5-4.1 4.2v2.3H7.8V13h2.7v8h3.2Z"/>
+                    </svg>
+                </a>
+            </li>
         </ul>
     </nav>
     <div class="hero">
         <div class="hero-logo">
-            <a href="/">
+            <a href="https://www.sipkytrest.cz/" aria-label="Šipky Třešť – přejít na úvodní stránku" title="Úvodní stránka">
                 <img src="img/logo.png" alt="Šipky Třešť" class="logo-image" width="284" height="264">
             </a>
         </div>
@@ -70,13 +84,16 @@ if ($result) {
 <section class="section feature">
     <h1>Hráči klubu</h1>
 
+    <div class="players-table-wrap">
     <table class="players-table">
-        <caption class="sr-only">Seznam hráčů klubu, jejich klubových čísel a přezdívek</caption>
+        <caption class="sr-only">Seznam hráčů klubu, jejich klubových čísel, přezdívek, bydliště a věku</caption>
         <thead>
             <tr>
                 <th>Klubové číslo</th>
                 <th>Jméno</th>
                 <th>Přezdívka</th>
+                <th>Bydliště</th>
+                <th>Věk</th>
             </tr>
         </thead>
         <tbody>
@@ -85,11 +102,13 @@ if ($result) {
                     <td><?= htmlspecialchars((string) $hrac['klubove_cislo'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td><?= htmlspecialchars((string) $hrac['jmeno'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
                     <td><?= htmlspecialchars((string) ($hrac['prezdivka'] ?: "—"), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td><?= htmlspecialchars((string) ($hrac['bydliste'] ?: "—"), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></td>
+                    <td><?= $hrac['vek'] !== null ? (int)$hrac['vek'] : "—" ?></td>
                 </tr>
             <?php endforeach; ?>
             <?php if (!$hraci): ?>
                 <tr>
-                    <td colspan="3" class="players-empty">
+                    <td colspan="5" class="players-empty">
                         <?= $nacteniSelhalo
                             ? 'Seznam hráčů se teď nepodařilo načíst. Zkuste to prosím později.'
                             : 'V seznamu zatím nejsou žádní hráči.' ?>
@@ -98,6 +117,7 @@ if ($result) {
             <?php endif; ?>
         </tbody>
     </table>
+    </div>
 </section>
 
 </main>

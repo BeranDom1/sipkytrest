@@ -719,6 +719,11 @@ button:focus-visible {
     box-shadow: 0 8px 18px rgba(11, 18, 32, 0.06);
 }
 
+.players-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 .players-table th,
 .players-table td {
     text-align: left;
