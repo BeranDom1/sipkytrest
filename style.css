@@ -20,6 +20,10 @@
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     margin: 0;
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -310,6 +314,7 @@ a:hover {
 /* VÁNOČNÍ TURNAJ */
 .section.tournament-registration {
     text-align: center;
+    scroll-margin-top: 14rem;
 }
 
 .tournament-registration__content {
@@ -653,6 +658,12 @@ button:focus-visible {
     .link-card {
         min-width: 160px;
         max-width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
     }
 }
 
