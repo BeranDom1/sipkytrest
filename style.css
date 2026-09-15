@@ -307,6 +307,74 @@ a:hover {
     color: var(--color-muted);
 }
 
+/* VÁNOČNÍ TURNAJ */
+.section.tournament-registration {
+    text-align: center;
+}
+
+.tournament-registration__content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(240px, 0.8fr);
+    gap: 1.5rem;
+    align-items: center;
+    margin-top: 1.2rem;
+}
+
+.tournament-registration__poster-link,
+.tournament-registration__qr-link {
+    display: block;
+    border-radius: var(--radius-md);
+}
+
+.tournament-registration__poster-link:hover,
+.tournament-registration__qr-link:hover {
+    text-decoration: none;
+}
+
+.tournament-registration__poster {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-md);
+    box-shadow: 0 16px 30px rgba(12, 20, 32, 0.2);
+}
+
+.tournament-registration__details {
+    padding: 1.25rem;
+    border: 1px solid rgba(32, 48, 71, 0.1);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+
+.tournament-registration__details h3 {
+    margin: 0 0 0.45rem;
+    color: #1d2634;
+    font-size: 1.3rem;
+}
+
+.tournament-registration__details p {
+    margin: 0.45rem 0 1rem;
+    color: var(--color-muted);
+}
+
+.tournament-registration__qr {
+    display: block;
+    width: min(100%, 260px);
+    height: auto;
+    margin: 0 auto 1rem;
+    border: 10px solid #fff;
+    border-radius: 10px;
+}
+
+.tournament-registration__details .btn {
+    margin: 0;
+}
+
+.tournament-registration__details .tournament-registration__payment {
+    margin: 1rem 0 0;
+    color: #1f2937;
+}
+
 /* KONTAKT */
 .section.contact {
     max-width: 900px;
@@ -561,6 +629,14 @@ button:focus-visible {
         display: flex;
         margin: 0 0 1rem;
         width: 100%;
+    }
+
+    .tournament-registration__content {
+        grid-template-columns: 1fr;
+    }
+
+    .tournament-registration__details {
+        padding: 1rem;
     }
 
     .sponsor-logos,
