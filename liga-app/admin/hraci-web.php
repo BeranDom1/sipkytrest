@@ -4,7 +4,6 @@ declare(strict_types=1);
 require_once __DIR__.'/../db.php';
 require_once __DIR__.'/_auth.php';
 require_once __DIR__.'/../security/csrf.php';
-require_once __DIR__.'/../web-players-schema.php';
 
 function webPlayerH(?string $value): string
 {
@@ -32,12 +31,50 @@ function nextClubNumber(array &$usedNumbers): string
     return str_pad((string)$next, 3, '0', STR_PAD_LEFT);
 }
 
+function mapWebPlayerProfiles(array $profileRows, array $playerMap): array
+{
+    $byName = [];
+    foreach ($playerMap as $playerId => $player) {
+        $byName[webPlayerLower(trim((string)$player['jmeno']))] = $playerId;
+    }
+
+    $legacyClubNumbers = [
+        '002' => 1, '003' => 18, '006' => 35, '008' => 32,
+        '018' => 9, '024' => 40, '029' => 17, '032' => 139,
+        '034' => 44, '039' => 138, '043' => 30, '046' => 42,
+        '053' => 36, '055' => 146, '058' => 149, '059' => 150,
+    ];
+
+    $profiles = [];
+    $unlinked = [];
+    foreach ($profileRows as $profile) {
+        $playerId = null;
+        $isVisible = true;
+        if (preg_match('/^\[SKRYTY:(\d+)\]\s*/u', (string)$profile['jmeno'], $match)) {
+            $playerId = (int)$match[1];
+            $isVisible = false;
+        } elseif (isset($legacyClubNumbers[(string)$profile['klubove_cislo']])) {
+            $playerId = $legacyClubNumbers[(string)$profile['klubove_cislo']];
+        } else {
+            $normalizedName = webPlayerLower(trim((string)$profile['jmeno']));
+            $playerId = $byName[$normalizedName] ?? null;
+        }
+
+        if ($playerId && isset($playerMap[$playerId]) && !isset($profiles[$playerId])) {
+            $profile['_visible'] = $isVisible;
+            $profiles[$playerId] = $profile;
+        } else {
+            $unlinked[] = $profile;
+        }
+    }
+
+    return [$profiles, $unlinked];
+}
+
 $message = '';
 $error = '';
 
 try {
-    ensureWebPlayersSchema($conn);
-
     $players = $conn->query('SELECT libovolne_id, jmeno FROM hraci_unikatni_jmena ORDER BY jmeno')->fetch_all(MYSQLI_ASSOC);
     $playerMap = [];
     foreach ($players as $player) {
@@ -56,27 +93,25 @@ try {
 
         $conn->begin_transaction();
         try {
-            $profiles = [];
             $profileResult = $conn->query('SELECT * FROM seznam_hracu_web FOR UPDATE');
-            while ($profile = $profileResult->fetch_assoc()) {
-                if ($profile['hrac_id'] !== null) {
-                    $profiles[(int)$profile['hrac_id']] = $profile;
-                }
-            }
+            $lockedProfileRows = $profileResult->fetch_all(MYSQLI_ASSOC);
+            [$profiles] = mapWebPlayerProfiles($lockedProfileRows, $playerMap);
 
             $usedNumbers = [];
-            $numberResult = $conn->query('SELECT klubove_cislo FROM seznam_hracu_web');
-            while ($number = $numberResult->fetch_assoc()) {
+            foreach ($lockedProfileRows as $number) {
                 $numeric = (int)$number['klubove_cislo'];
+                if ($numeric > 0 && isset($usedNumbers[$numeric])) {
+                    throw new RuntimeException('Klubové číslo '.str_pad((string)$numeric, 3, '0', STR_PAD_LEFT).' je v databázi vícekrát.');
+                }
                 if ($numeric > 0) $usedNumbers[$numeric] = true;
             }
 
             $update = $conn->prepare('UPDATE seznam_hracu_web
-                SET jmeno=?, prezdivka=NULLIF(?, \'\'), bydliste=NULLIF(?, \'\'), vek=?, zobrazit=?
-                WHERE hrac_id=?');
+                SET jmeno=?, prezdivka=NULLIF(?, \'\'), bydliste=NULLIF(?, \'\'), vek=?
+                WHERE klubove_cislo=?');
             $insert = $conn->prepare('INSERT INTO seznam_hracu_web
-                (klubove_cislo,jmeno,prezdivka,bydliste,vek,hrac_id,zobrazit)
-                VALUES (?, ?, NULLIF(?, \'\'), NULLIF(?, \'\'), ?, ?, 1)');
+                (klubove_cislo,jmeno,prezdivka,bydliste,vek)
+                VALUES (?, ?, NULLIF(?, \'\'), NULLIF(?, \'\'), ?)');
             if (!$update || !$insert) {
                 throw new RuntimeException('Ukládání profilů se nepodařilo připravit: '.$conn->error);
             }
@@ -93,13 +128,15 @@ try {
                 $name = (string)$player['jmeno'];
 
                 if (isset($profiles[$playerId])) {
-                    $update->bind_param('sssiii', $name, $nickname, $residence, $age, $isVisible, $playerId);
+                    $storedName = $isVisible ? $name : '[SKRYTY:'.$playerId.'] '.$name;
+                    $clubNumber = (string)$profiles[$playerId]['klubove_cislo'];
+                    $update->bind_param('sssis', $storedName, $nickname, $residence, $age, $clubNumber);
                     if (!$update->execute()) {
                         throw new RuntimeException('Profil hráče „'.$name.'“ se nepodařilo uložit: '.$update->error);
                     }
                 } elseif ($isVisible) {
                     $clubNumber = nextClubNumber($usedNumbers);
-                    $insert->bind_param('ssssii', $clubNumber, $name, $nickname, $residence, $age, $playerId);
+                    $insert->bind_param('ssssi', $clubNumber, $name, $nickname, $residence, $age);
                     if (!$insert->execute()) {
                         throw new RuntimeException('Profil hráče „'.$name.'“ se nepodařilo vytvořit: '.$insert->error);
                     }
@@ -116,15 +153,7 @@ try {
     }
 
     $profileRows = $conn->query('SELECT * FROM seznam_hracu_web ORDER BY CAST(klubove_cislo AS UNSIGNED), klubove_cislo')->fetch_all(MYSQLI_ASSOC);
-    $profiles = [];
-    $unlinkedProfiles = [];
-    foreach ($profileRows as $profile) {
-        if ($profile['hrac_id'] !== null && isset($playerMap[(int)$profile['hrac_id']])) {
-            $profiles[(int)$profile['hrac_id']] = $profile;
-        } else {
-            $unlinkedProfiles[] = $profile;
-        }
-    }
+    [$profiles, $unlinkedProfiles] = mapWebPlayerProfiles($profileRows, $playerMap);
 } catch (Throwable $exception) {
     $error = $exception->getMessage();
     $players = $players ?? [];
@@ -174,7 +203,7 @@ $csrf = csrf_token();
                         $searchText = implode(' ', [$player['jmeno'], $profile['klubove_cislo'] ?? '', $profile['prezdivka'] ?? '', $profile['bydliste'] ?? '']);
                     ?>
                         <tr data-web-player="<?= webPlayerH(webPlayerLower($searchText)) ?>">
-                            <td><label class="web-player-toggle"><input type="checkbox" name="zobrazit[<?= $playerId ?>]" value="1" <?= !empty($profile['zobrazit']) ? 'checked' : '' ?>><span class="sr-only">Zobrazit hráče <?= webPlayerH($player['jmeno']) ?></span></label></td>
+                            <td><label class="web-player-toggle"><input type="checkbox" name="zobrazit[<?= $playerId ?>]" value="1" <?= !empty($profile['_visible']) ? 'checked' : '' ?>><span class="sr-only">Zobrazit hráče <?= webPlayerH($player['jmeno']) ?></span></label></td>
                             <td class="web-player-number"><?= webPlayerH($profile['klubove_cislo'] ?? 'automaticky') ?></td>
                             <td><strong><?= webPlayerH($player['jmeno']) ?></strong></td>
                             <td><input name="prezdivka[<?= $playerId ?>]" maxlength="100" value="<?= webPlayerH($profile['prezdivka'] ?? '') ?>" aria-label="Přezdívka hráče <?= webPlayerH($player['jmeno']) ?>"></td>
