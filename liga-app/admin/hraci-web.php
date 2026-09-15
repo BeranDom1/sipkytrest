@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__.'/../db.php';
-require_once __DIR__.'/_auth.php';
+require_once __DIR__.'/_auth_web_players.php';
 require_once __DIR__.'/../security/csrf.php';
 
 function webPlayerH(?string $value): string
@@ -175,7 +175,7 @@ $csrf = csrf_token();
 </head>
 <body class="admin-body">
 <main class="admin-shell">
-    <div class="admin-top"><a href="/liga-app/admin/index.php">← Administrace</a><a href="/liga-app/logout.php">Odhlásit</a></div>
+    <div class="admin-top"><a href="<?= $webPlayersRole === 'admin' ? '/liga-app/admin/index.php' : '/liga-app/index.php' ?>">← <?= $webPlayersRole === 'admin' ? 'Administrace' : 'Ligová aplikace' ?></a><a href="/liga-app/logout.php">Odhlásit</a></div>
     <h1 class="admin-title">Editace hráčů na webu</h1>
     <p class="admin-subtitle">Zaškrtnutí určuje, kdo se zobrazí na stránce Hráči. Novému profilu se automaticky přidělí další volné klubové číslo.</p>
 
