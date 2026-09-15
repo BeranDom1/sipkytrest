@@ -150,6 +150,28 @@ a:hover {
     text-decoration: none;
 }
 
+.main-nav .main-nav__facebook {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    place-items: center;
+    border-radius: 50%;
+    background: #1877f2;
+    color: #fff;
+}
+
+.main-nav .main-nav__facebook:hover,
+.main-nav .main-nav__facebook:focus {
+    background: #3b8df5;
+}
+
+.main-nav__facebook svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
 .hero {
     max-width: 560px;
     margin: 0 auto;
