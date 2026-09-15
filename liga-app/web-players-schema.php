@@ -10,17 +10,22 @@ function ensureWebPlayersSchema(mysqli $conn): void
     static $ready = false;
     if ($ready) return;
 
-    if (!$conn->query("CREATE TABLE IF NOT EXISTS seznam_hracu_web (
-        klubove_cislo VARCHAR(10) NOT NULL,
-        jmeno VARCHAR(100) NOT NULL,
-        prezdivka VARCHAR(100) NULL,
-        bydliste VARCHAR(100) NULL,
-        vek TINYINT UNSIGNED NULL,
-        hrac_id INT UNSIGNED NULL,
-        zobrazit TINYINT(1) NOT NULL DEFAULT 1,
-        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_czech_ci")) {
-        throw new RuntimeException('Tabulku veřejných hráčů se nepodařilo připravit: '.$conn->error, $conn->errno);
+    $table = $conn->query("SHOW TABLES LIKE 'seznam_hracu_web'");
+    if (!$table) {
+        throw new RuntimeException('Tabulku veřejných hráčů se nepodařilo ověřit: '.$conn->error, $conn->errno);
+    }
+    if ($table->num_rows === 0
+        && !$conn->query("CREATE TABLE seznam_hracu_web (
+            klubove_cislo VARCHAR(10) NOT NULL,
+            jmeno VARCHAR(100) NOT NULL,
+            prezdivka VARCHAR(100) NULL,
+            bydliste VARCHAR(100) NULL,
+            vek TINYINT UNSIGNED NULL,
+            hrac_id INT UNSIGNED NULL,
+            zobrazit TINYINT(1) NOT NULL DEFAULT 1,
+            updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_czech_ci")) {
+        throw new RuntimeException('Tabulku veřejných hráčů se nepodařilo vytvořit: '.$conn->error, $conn->errno);
     }
 
     $columns = [
