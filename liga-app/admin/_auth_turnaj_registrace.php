@@ -1,15 +1,16 @@
 <?php
-// Správu online registrací smí administrátor a pověřený stat editor Jakub Šebesta.
+// Správu online registrací smí administrátor a stat editor.
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
 $registrationRole = (string)($_SESSION['role'] ?? 'viewer');
 $registrationUserId = (int)($_SESSION['user_id'] ?? 0);
-$registrationUsername = (string)($_SESSION['username'] ?? '');
-$canManageTournamentRegistrations = $registrationRole === 'admin'
-    || ($registrationRole === 'stat_editor'
-        && hash_equals('sebesta', $registrationUsername));
+$canManageTournamentRegistrations = in_array(
+    $registrationRole,
+    ['admin', 'stat_editor'],
+    true
+);
 
 if (!$canManageTournamentRegistrations) {
     if ($registrationUserId <= 0) {
