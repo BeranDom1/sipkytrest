@@ -18,10 +18,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20260911">
+    <link rel="stylesheet" href="style.css?v=20260915">
 </head>
 
 <body>
+
+<dialog class="event-modal" id="eventPosterDialog" aria-labelledby="eventPosterTitle">
+    <div class="event-modal__panel">
+        <h2 class="sr-only" id="eventPosterTitle">Vánoční šipkový turnaj 2026</h2>
+        <button class="event-modal__close" type="button" aria-label="Zavřít plakát">&times;</button>
+        <img src="img/vanocni-sipkovy-turnaj-2026.png"
+             alt="Plakát na Vánoční šipkový turnaj v Třešti dne 12. prosince 2026"
+             width="1122" height="1402">
+    </div>
+</dialog>
 
 <header class="site-header">
     <nav class="main-nav" aria-label="Hlavní navigace">
@@ -63,6 +73,39 @@
         <img src="img/steel-open-trest-2026.png"
              alt="Plakát série Steel Open Třešť 2026"
              class="event-poster" width="1055" height="1491" decoding="async">
+    </section>
+
+    <!-- VÁNOČNÍ TURNAJ -->
+    <section class="section tournament-registration" aria-labelledby="christmasTournamentTitle">
+        <h2 id="christmasTournamentTitle">Vánoční šipkový turnaj 2026</h2>
+        <div class="tournament-registration__content">
+            <a href="https://sipkytrest.cz/turnaj/vanocni-turnaj-2026"
+               class="tournament-registration__poster-link"
+               aria-label="Otevřít online registraci na Vánoční šipkový turnaj 2026">
+                <img src="img/vanocni-sipkovy-turnaj-2026.png"
+                     alt="Plakát na Vánoční šipkový turnaj v Třešti dne 12. prosince 2026"
+                     class="tournament-registration__poster" width="1122" height="1402"
+                     loading="lazy" decoding="async">
+            </a>
+            <div class="tournament-registration__details">
+                <h3>Registrace probíhá online</h3>
+                <p>Naskenujte QR kód nebo použijte odkaz níže.</p>
+                <a href="https://sipkytrest.cz/turnaj/vanocni-turnaj-2026"
+                   class="tournament-registration__qr-link"
+                   aria-label="Otevřít online registraci na Vánoční šipkový turnaj 2026 pomocí QR kódu">
+                    <img src="img/qr-vanocni-turnaj-2026.svg"
+                         alt="QR kód pro online registraci na Vánoční šipkový turnaj 2026"
+                         class="tournament-registration__qr" width="588" height="588"
+                         loading="lazy" decoding="async">
+                </a>
+                <a href="https://sipkytrest.cz/turnaj/vanocni-turnaj-2026" class="btn primary">
+                    Registrovat se online
+                </a>
+                <p class="tournament-registration__payment">
+                    <strong>Platba startovného proběhne až na místě.</strong>
+                </p>
+            </div>
+        </div>
     </section>
 
     <!-- KONTAKT -->
@@ -214,7 +257,7 @@
     <p>© <span id="year">2026</span> Šipky Třešť</p>
 </footer>
 
-<script src="script.js" defer></script> <!-- externalized interactions -->
+<script src="script.js?v=20260912" defer></script> <!-- externalized interactions -->
 
 </body>
 </html>

@@ -1,4 +1,21 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const eventDialog = document.getElementById("eventPosterDialog");
+
+    if (eventDialog) {
+        const closeButton = eventDialog.querySelector(".event-modal__close");
+        const panel = eventDialog.querySelector(".event-modal__panel");
+        const closeDialog = () => eventDialog.close();
+
+        closeButton?.addEventListener("click", closeDialog);
+        eventDialog.addEventListener("click", (event) => {
+            if (!panel.contains(event.target)) {
+                closeDialog();
+            }
+        });
+
+        eventDialog.showModal();
+    }
+
     const year = document.getElementById("year");
 
     if (year) {
