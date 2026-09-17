@@ -149,9 +149,8 @@ h3{font-size:clamp(18px,2.2vw,22px);margin:16px 0 8px}
 
 /* ============= Tables — typed ============= */
 /* Liga – jediné barevné zvýraznění */
-.table--league tbody tr:nth-child(1){background:#dffbe9}
-.table--league tbody tr:nth-child(2){background:#eefcd6}
-.table--league tbody tr:nth-last-child(-n+2){background:#ffe2e5}
+.table--league tbody tr.league-row--promotion{background:#e6ffed}
+.table--league tbody tr.league-row--relegation{background:#ffe6e6}
 
 /* Rozpis */
 .table--rozpis th:nth-child(1),.table--rozpis td:nth-child(1){text-align:left;width:40%}
@@ -1355,9 +1354,6 @@ html[data-theme=dark] .nk-season::after{border-top-color:var(--nk-text)}
 html[data-theme=dark] .table th{background:#1c3036;color:#8ed8df}
 html[data-theme=dark] .table td,html[data-theme=dark] .table th,html[data-theme=dark] .table th+th,html[data-theme=dark] .table td+td{border-color:var(--nk-border)}
 html[data-theme=dark] .table tbody tr{background:var(--nk-surface);color:var(--nk-text)}
-html[data-theme=dark] .table--league tbody tr:nth-child(1){background:#17392f}
-html[data-theme=dark] .table--league tbody tr:nth-child(2){background:#293a27}
-html[data-theme=dark] .table--league tbody tr:nth-last-child(-n+2){background:#43272c}
 html[data-theme=dark] .league-row,html[data-theme=dark] .progress{background:#1a282e}
 html[data-theme=dark] .badge{background:#203b41;color:#8ed8df}
 html[data-theme=dark] .nk-footer{background:#101a1f;border-color:var(--nk-border);color:var(--nk-muted)}
@@ -1366,24 +1362,12 @@ html[data-theme=dark] .match-table td:nth-child(3){color:var(--nk-muted)}
 html[data-theme=dark] #installBtn{background:#1b292f!important;color:var(--nk-text)!important;border-color:var(--nk-border)!important}
 
 /* Dark theme contrast corrections. */
-html[data-theme=dark] .table--league tbody tr[style*="#e6ffed"]{background:#bfe8d3!important;color:#142529!important}
-html[data-theme=dark] .table--league tbody tr[style*="#ffe6e6"]{background:#e8c4c8!important;color:#142529!important}
-html[data-theme=dark] .table--league tbody tr[style*="#e6ffed"] td,
-html[data-theme=dark] .table--league tbody tr[style*="#ffe6e6"] td,
-html[data-theme=dark] .table--league tbody tr[style*="#e6ffed"] a,
-html[data-theme=dark] .table--league tbody tr[style*="#ffe6e6"] a{color:#142529!important}
-html[data-theme=dark] .table--league tbody tr:nth-child(1){background:#bfe8d3!important}
-html[data-theme=dark] .table--league tbody tr:nth-child(2){background:#dce9b7!important}
-html[data-theme=dark] .table--league tbody tr:nth-last-child(-n+2){background:#e8c4c8!important}
-html[data-theme=dark] .table--league tbody tr:nth-child(1),
-html[data-theme=dark] .table--league tbody tr:nth-child(2),
-html[data-theme=dark] .table--league tbody tr:nth-last-child(-n+2),
-html[data-theme=dark] .table--league tbody tr:nth-child(1) td,
-html[data-theme=dark] .table--league tbody tr:nth-child(2) td,
-html[data-theme=dark] .table--league tbody tr:nth-last-child(-n+2) td,
-html[data-theme=dark] .table--league tbody tr:nth-child(1) a,
-html[data-theme=dark] .table--league tbody tr:nth-child(2) a,
-html[data-theme=dark] .table--league tbody tr:nth-last-child(-n+2) a{color:#142529!important}
+html[data-theme=dark] .table--league tbody tr.league-row--promotion{background:#bfe8d3!important;color:#142529!important}
+html[data-theme=dark] .table--league tbody tr.league-row--relegation{background:#e8c4c8!important;color:#142529!important}
+html[data-theme=dark] .table--league tbody tr.league-row--promotion td,
+html[data-theme=dark] .table--league tbody tr.league-row--relegation td,
+html[data-theme=dark] .table--league tbody tr.league-row--promotion a,
+html[data-theme=dark] .table--league tbody tr.league-row--relegation a{color:#142529!important}
 
 /* Živý přehled play-off je informační tabulka bez barev pořadí. */
 .women-playoff-preview .table--playoff tbody tr,

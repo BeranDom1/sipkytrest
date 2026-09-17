@@ -130,6 +130,17 @@ if (count($womenGroups) === 2 && in_array($liga_id, $womenLeagueIds, true)) {
 
 /* 5) Render */
 $nadpis = _liga_name($conn, $liga_id) . ' – ' . _rocnik_name($conn, $rocnik_id);
+
+// Výchozí pravidla zvýraznění; výjimky jsou vázané na konkrétní ročník a ligu.
+$promotionPlaces = $liga_id === 1 ? 3 : 2;
+$relegationPlaces = $liga_id === 1 ? 4 : 2;
+$promotionOverrides = [
+    6 => [ // Podzim 2026
+        4 => 1, // 3. liga sk. A
+        5 => 3, // 3. liga sk. B
+    ],
+];
+$promotionPlaces = $promotionOverrides[$rocnik_id][$liga_id] ?? $promotionPlaces;
 ?>
 <main id="content" class="nk-content nk-content--flat">
   <h2><?= htmlspecialchars($nadpis) ?></h2>
@@ -147,31 +158,11 @@ foreach ($rows as $row):
 
   $cls = '';
 
-  /* === 1. liga – speciální pravidla ======================= */
-  if ($liga_id === 1) {
-
-    // postup: 1.–3. místo
-    if ($i <= 3) {
-      $cls = ' style="background:#e6ffed"';
-    }
-
-    // sestup: poslední 4 místa
-    elseif ($i > $totalPlayers - 4) {
-      $cls = ' style="background:#ffe6e6"';
-    }
-
-  /* === ostatní ligy – původní chování ===================== */
-  } else {
-
-    // postup: 1.–2. místo
-    if ($i <= 2) {
-      $cls = ' style="background:#e6ffed"';
-    }
-
-    // sestup: poslední 2 místa
-    elseif ($i > $totalPlayers - 2) {
-      $cls = ' style="background:#ffe6e6"';
-    }
+  if ($i <= $promotionPlaces) {
+    $cls = ' class="league-row--promotion"';
+  }
+  elseif ($i > $totalPlayers - $relegationPlaces) {
+    $cls = ' class="league-row--relegation"';
   }
 ?>
         <tr<?= $cls ?>>
