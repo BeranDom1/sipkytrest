@@ -137,7 +137,6 @@ $relegationPlaces = $liga_id === 1 ? 4 : 2;
 $promotionOverrides = [
     6 => [ // Podzim 2026
         4 => 1, // 3. liga sk. A
-        5 => 3, // 3. liga sk. B
     ],
 ];
 $promotionPlaces = $promotionOverrides[$rocnik_id][$liga_id] ?? $promotionPlaces;
