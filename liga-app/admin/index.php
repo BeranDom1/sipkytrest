@@ -3,6 +3,7 @@ require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../common.php';
 require_once __DIR__ . '/_auth_portal.php';
 require_once __DIR__ . '/season_helpers.php';
+require_once __DIR__ . '/../security/csrf.php';
 
 $active = $conn->query("SELECT id, nazev FROM rocniky WHERE stav = 'aktivni' ORDER BY id DESC LIMIT 1")->fetch_assoc();
 if (!$active) {
@@ -43,6 +44,7 @@ if ($activeId > 0) {
     <section class="admin-card"><h2>Hráči a ligy</h2><div class="admin-actions"><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/hraci.php">Databáze hráčů</a><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/hraci-web.php">Editace hráčů na webu</a><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/ligy.php<?= $activeId ? '?rocnik_id='.$activeId : '' ?>">Správa lig</a></div></section>
     <section class="admin-card"><h2>Výsledky a turnaje</h2><div class="admin-actions"><a class="admin-btn admin-btn--secondary" href="/liga-app/rozpisy/1rozpis.php">Zapsat výsledek</a><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/pohar.php">Prezidentský pohár</a><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/registrace-turnaje.php">Registrace na turnaje</a><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/create_user.php">Uživatelé</a></div></section>
   </div>
+  <section class="admin-card" style="margin-top:14px"><h2>Záloha</h2><p>Stáhne úplnou SQL zálohu databáze do vašeho počítače.</p><form method="post" action="/liga-app/admin/backup_databaze.php"><input type="hidden" name="csrf" value="<?= htmlspecialchars(csrf_token()) ?>"><button class="admin-btn admin-btn--secondary" type="submit">Stáhnout zálohu databáze</button></form></section>
   <?php else: ?>
   <div class="admin-grid admin-grid--two" style="margin-top:14px">
     <section class="admin-card"><h2>Hráči</h2><div class="admin-actions"><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/hraci-web.php">Editace hráčů na webu</a></div></section>

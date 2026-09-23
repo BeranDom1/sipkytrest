@@ -15,6 +15,60 @@ function admin_season_is_editable(array $season): bool
     return ($season['stav'] ?? '') === 'priprava' && (int)$season['locked'] === 0;
 }
 
+function admin_active_season_edit_is_enabled(array $season): bool
+{
+    $seasonId = (int)($season['id'] ?? 0);
+    $enabled = $_SESSION['admin_active_season_edits'] ?? [];
+
+    return $seasonId > 0
+        && ($season['stav'] ?? '') === 'aktivni'
+        && (int)($season['locked'] ?? 0) === 0
+        && is_array($enabled)
+        && !empty($enabled[$seasonId]);
+}
+
+function admin_season_can_manage_competition(array $season): bool
+{
+    return admin_season_is_editable($season) || admin_active_season_edit_is_enabled($season);
+}
+
+function admin_enable_active_season_edit(int $seasonId): void
+{
+    if (!isset($_SESSION['admin_active_season_edits']) || !is_array($_SESSION['admin_active_season_edits'])) {
+        $_SESSION['admin_active_season_edits'] = [];
+    }
+    $_SESSION['admin_active_season_edits'][$seasonId] = true;
+}
+
+function admin_disable_active_season_edit(int $seasonId): void
+{
+    if (isset($_SESSION['admin_active_season_edits']) && is_array($_SESSION['admin_active_season_edits'])) {
+        unset($_SESSION['admin_active_season_edits'][$seasonId]);
+    }
+}
+
+function admin_season_has_match_data(mysqli $conn, int $seasonId): bool
+{
+    $stmt = $conn->prepare(
+        'SELECT 1 FROM zapasy
+         WHERE rocnik_id = ? AND (
+             skore1 IS NOT NULL OR skore2 IS NOT NULL OR datum IS NOT NULL
+             OR average_home IS NOT NULL OR average_away IS NOT NULL
+             OR COALESCE(high_finish_home, 0) > 0 OR COALESCE(high_finish_away, 0) > 0
+             OR COALESCE(count_100p_home, 0) > 0 OR COALESCE(count_100p_away, 0) > 0
+             OR COALESCE(count_120p_home, 0) > 0 OR COALESCE(count_120p_away, 0) > 0
+             OR COALESCE(count_140p_home, 0) > 0 OR COALESCE(count_140p_away, 0) > 0
+             OR COALESCE(count_160p_home, 0) > 0 OR COALESCE(count_160p_away, 0) > 0
+             OR COALESCE(count_180_home, 0) > 0 OR COALESCE(count_180_away, 0) > 0
+         ) LIMIT 1'
+    );
+    $stmt->bind_param('i', $seasonId);
+    $stmt->execute();
+    $hasData = (bool)$stmt->get_result()->fetch_row();
+    $stmt->close();
+    return $hasData;
+}
+
 /** Delete only a draft and its season-owned data, atomically. */
 function admin_delete_draft_season(mysqli $conn, int $seasonId): void
 {
@@ -135,11 +189,24 @@ function admin_round_robin(array $playerIds): array
 
 function admin_match_has_result(array $match): bool
 {
-    return $match['skore1'] !== null
-        || $match['skore2'] !== null
-        || $match['datum'] !== null
-        || $match['average_home'] !== null
-        || $match['average_away'] !== null;
+    foreach (['skore1', 'skore2', 'datum', 'average_home', 'average_away'] as $field) {
+        if (array_key_exists($field, $match) && $match[$field] !== null) {
+            return true;
+        }
+    }
+    foreach ([
+        'high_finish_home', 'high_finish_away',
+        'count_100p_home', 'count_100p_away',
+        'count_120p_home', 'count_120p_away',
+        'count_140p_home', 'count_140p_away',
+        'count_160p_home', 'count_160p_away',
+        'count_180_home', 'count_180_away',
+    ] as $field) {
+        if (array_key_exists($field, $match) && (int)$match[$field] > 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function admin_status_label(string $status): string

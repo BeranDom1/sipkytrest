@@ -10,7 +10,7 @@ if (!$season) {
     http_response_code(404);
     exit('Sezóna nebyla nalezena.');
 }
-$editable = admin_season_is_editable($season);
+$editable = admin_season_can_manage_competition($season);
 $message = isset($_GET['created']) ? 'Sezóna byla vytvořena. Nyní upravte účastníky a ligy.' : '';
 $error = '';
 
@@ -127,6 +127,7 @@ $csrf = csrf_token();
   <p class="admin-subtitle"><span class="admin-badge admin-badge--<?= htmlspecialchars($season['stav']) ?>"><?= htmlspecialchars(admin_status_label($season['stav'])) ?></span> · <?= count($leagues) ?> lig</p>
   <?php if ($message): ?><div class="admin-alert admin-alert--success"><?= htmlspecialchars($message) ?></div><?php endif; ?>
   <?php if ($error): ?><div class="admin-alert admin-alert--danger"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+  <?php if (admin_active_season_edit_is_enabled($season)): ?><div class="admin-alert admin-alert--danger">Je zapnutý opravný režim aktivní sezóny. Smažte neodehraný rozpis, upravte hráče a hned vytvořte nový rozpis. Po jeho vytvoření se režim automaticky vypne.</div><?php endif; ?>
   <?php if (!$editable): ?><div class="admin-alert">Sezóna je pouze ke čtení. Historické rozřazení a výsledky zůstávají zachované.</div><?php endif; ?>
   <?php if ($hasSchedule && $editable): ?><div class="admin-alert">Rozpis už existuje. Před přesunem nebo odebráním hráčů jej smažte na kontrolní stránce; půjde to pouze bez zapsaných výsledků.</div><?php endif; ?>
 

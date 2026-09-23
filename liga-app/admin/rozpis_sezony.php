@@ -7,7 +7,7 @@ require_once __DIR__ . '/season_helpers.php';
 $seasonId = (int)($_REQUEST['rocnik_id'] ?? 0);
 $season = admin_season($conn, $seasonId);
 if (!$season) { http_response_code(404); exit('Sezóna nebyla nalezena.'); }
-$editable = admin_season_is_editable($season);
+$editable = admin_season_can_manage_competition($season);
 $message = '';
 $error = '';
 
@@ -27,7 +27,11 @@ function loadSeasonLeagueData(mysqli $conn, int $seasonId): array
         $stmt->close();
 
         $matchStmt = $conn->prepare(
-            'SELECT id, hrac1_id, hrac2_id, skore1, skore2, datum, average_home, average_away, kolo
+            'SELECT id, hrac1_id, hrac2_id, skore1, skore2, datum, average_home, average_away,
+                    high_finish_home, high_finish_away,
+                    count_100p_home, count_100p_away, count_120p_home, count_120p_away,
+                    count_140p_home, count_140p_away, count_160p_home, count_160p_away,
+                    count_180_home, count_180_away, kolo
              FROM zapasy WHERE rocnik_id = ? AND liga_id = ? ORDER BY kolo, id'
         );
         $matchStmt->bind_param('ii', $seasonId, $leagueId);
@@ -62,7 +66,7 @@ function loadSeasonLeagueData(mysqli $conn, int $seasonId): array
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!csrf_check($_POST['csrf'] ?? '')) { http_response_code(403); exit('CSRF ověření selhalo.'); }
-    if (!$editable) { http_response_code(403); exit('Rozpis archivní nebo aktivní sezóny nelze měnit.'); }
+    if (!$editable) { http_response_code(403); exit('Rozpis této sezóny nyní nelze měnit.'); }
     $action = $_POST['action'] ?? '';
     try {
         $leagueData = loadSeasonLeagueData($conn, $seasonId);
@@ -87,6 +91,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $insert->close();
             $conn->commit();
+            if (($season['stav'] ?? '') === 'aktivni') {
+                admin_disable_active_season_edit($seasonId);
+                $editable = false;
+            }
             $message = 'Rozpis všech lig byl vygenerován.';
         }
         if ($action === 'delete') {

@@ -180,6 +180,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['rocnik_id'] = $seasonId;
             $message = 'Sezóna byla aktivována a je nyní výchozí pro veřejnou část.';
         }
+
+        if ($action === 'enable_active_edit') {
+            $seasonId = (int)($_POST['rocnik_id'] ?? 0);
+            $season = admin_season($conn, $seasonId);
+            if (!$season || ($season['stav'] ?? '') !== 'aktivni' || (int)$season['locked'] !== 0) {
+                throw new RuntimeException('Opravný režim lze zapnout pouze pro odemčenou aktivní sezónu.');
+            }
+            if (admin_season_has_match_data($conn, $seasonId)) {
+                throw new RuntimeException('Opravný režim nelze zapnout, protože už existuje výsledek nebo zápasová statistika.');
+            }
+            admin_enable_active_season_edit($seasonId);
+            $message = 'Opravný režim aktivní sezóny byl zapnut. Nyní smažte rozpis, upravte hráče a vygenerujte nový rozpis.';
+        }
+
+        if ($action === 'disable_active_edit') {
+            $seasonId = (int)($_POST['rocnik_id'] ?? 0);
+            $season = admin_season($conn, $seasonId);
+            if (!$season || !admin_active_season_edit_is_enabled($season)) {
+                throw new RuntimeException('Opravný režim pro tuto sezónu není zapnutý.');
+            }
+            $schedule = $conn->prepare('SELECT COUNT(*) FROM zapasy WHERE rocnik_id = ?');
+            $schedule->bind_param('i', $seasonId);
+            $schedule->execute();
+            $hasSchedule = (int)$schedule->get_result()->fetch_row()[0] > 0;
+            $schedule->close();
+            if (!$hasSchedule) {
+                throw new RuntimeException('Opravný režim nelze ukončit bez rozpisu. Nejprve vytvořte nový rozpis.');
+            }
+            admin_disable_active_season_edit($seasonId);
+            $message = 'Opravný režim byl vypnut.';
+        }
     } catch (Throwable $e) {
         try { $conn->rollback(); } catch (Throwable $ignored) {}
         $error = $e->getMessage();
@@ -237,6 +268,13 @@ $csrf = csrf_token();
     <?php foreach ($seasons as $season): ?>
       <article class="admin-season"><div><h3><?= htmlspecialchars($season['nazev']) ?> <span class="admin-badge admin-badge--<?= htmlspecialchars($season['stav']) ?>"><?= htmlspecialchars(admin_status_label($season['stav'])) ?></span></h3><div class="admin-season__meta"><?= (int)$season['leagues'] ?> lig · <?= (int)$season['players'] ?> hráčů · <?= (int)$season['matches'] ?> zápasů</div></div>
       <div class="admin-actions"><a class="admin-btn admin-btn--secondary" href="/liga-app/admin/sezona.php?rocnik_id=<?= (int)$season['id'] ?>">Spravovat</a><?php if ($season['stav'] === 'priprava'): ?><form method="post"><input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>"><input type="hidden" name="action" value="activate"><input type="hidden" name="rocnik_id" value="<?= (int)$season['id'] ?>"><button class="admin-btn" type="submit">Aktivovat sezónu</button></form><?php endif; ?>
+      <?php if ($season['stav'] === 'aktivni'): ?>
+        <?php if (admin_active_season_edit_is_enabled($season)): ?>
+          <form method="post"><input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>"><input type="hidden" name="action" value="disable_active_edit"><input type="hidden" name="rocnik_id" value="<?= (int)$season['id'] ?>"><button class="admin-btn admin-btn--secondary" type="submit">Ukončit opravný režim</button></form>
+        <?php else: ?>
+          <form method="post" onsubmit="return confirm('Opravný režim je určen jen pro sezonu bez výsledků. Po zapnutí smažte rozpis, upravte hráče a ihned vygenerujte nový. Pokračovat?')"><input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>"><input type="hidden" name="action" value="enable_active_edit"><input type="hidden" name="rocnik_id" value="<?= (int)$season['id'] ?>"><button class="admin-btn admin-btn--danger" type="submit">Povolit opravu sestavy</button></form>
+        <?php endif; ?>
+      <?php endif; ?>
       <?php if (admin_season_is_editable($season)): ?>
         <form method="post" data-season-name="<?= htmlspecialchars($season['nazev'], ENT_QUOTES, 'UTF-8') ?>" onsubmit="return confirm('Opravdu smazat sezónu „' + this.dataset.seasonName + '“? Odstraní se její ligová nastavení, přiřazení hráčů, zápasy a poháry. Samotní hráči zůstanou zachováni. Tuto akci nelze vrátit.');">
           <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrf) ?>">
