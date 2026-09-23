@@ -131,15 +131,9 @@ if (count($womenGroups) === 2 && in_array($liga_id, $womenLeagueIds, true)) {
 /* 5) Render */
 $nadpis = _liga_name($conn, $liga_id) . ' – ' . _rocnik_name($conn, $rocnik_id);
 
-// Výchozí pravidla zvýraznění; výjimky jsou vázané na konkrétní ročník a ligu.
+// Pravidla zvýraznění postupových a sestupových míst.
 $promotionPlaces = $liga_id === 1 ? 3 : 2;
 $relegationPlaces = $liga_id === 1 ? 4 : 2;
-$promotionOverrides = [
-    6 => [ // Podzim 2026
-        4 => 1, // 3. liga sk. A
-    ],
-];
-$promotionPlaces = $promotionOverrides[$rocnik_id][$liga_id] ?? $promotionPlaces;
 ?>
 <main id="content" class="nk-content nk-content--flat">
   <h2><?= htmlspecialchars($nadpis) ?></h2>
