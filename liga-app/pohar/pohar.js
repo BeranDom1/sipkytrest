@@ -67,13 +67,36 @@ document.addEventListener('click', async e => {
   const zapasId = btn.dataset.zapasId;
   const zapasEl = btn.closest('.zapas');
 
-  const s1 = zapasEl.querySelector('[data-slot="skore1"]').value;
-  const s2 = zapasEl.querySelector('[data-slot="skore2"]').value;
+  const score1Input = zapasEl.querySelector('[data-slot="skore1"]');
+  const score2Input = zapasEl.querySelector('[data-slot="skore2"]');
+  const s1Raw = score1Input.value;
+  const s2Raw = score2Input.value;
 
-  if (s1 === '' || s2 === '') {
+  if (s1Raw === '' || s2Raw === '') {
     alert('Vyplň obě skóre');
     return;
   }
+
+  const s1 = Number(s1Raw);
+  const s2 = Number(s2Raw);
+  const winningLegs = Number(score1Input.max);
+  if (
+    !Number.isInteger(s1) || !Number.isInteger(s2)
+    || s1 < 0 || s2 < 0 || s1 === s2
+    || Math.max(s1, s2) !== winningLegs
+    || Math.min(s1, s2) >= winningLegs
+  ) {
+    alert(`Neplatný výsledek. Toto kolo se hraje na ${winningLegs} vítězných legů.`);
+    return;
+  }
+
+  const player1 = zapasEl.querySelector('.hrac-left .jmeno')?.textContent.trim() || 'Hráč 1';
+  const player2 = zapasEl.querySelector('.hrac-right .jmeno')?.textContent.trim() || 'Hráč 2';
+  const winner = s1 > s2 ? player1 : player2;
+  const confirmed = confirm(
+    `Opravdu chcete uložit tento výsledek?\n\n${player1} vs. ${player2}\n${s1} : ${s2}\n\nVítěz: ${winner}`
+  );
+  if (!confirmed) return;
 
   btn.disabled = true;
   btn.textContent = '...';
@@ -87,8 +110,8 @@ document.addEventListener('click', async e => {
       },
       body: JSON.stringify({
         zapas_id: zapasId,
-        skore1: parseInt(s1, 10),
-        skore2: parseInt(s2, 10)
+        skore1: s1,
+        skore2: s2
       })
     });
 
