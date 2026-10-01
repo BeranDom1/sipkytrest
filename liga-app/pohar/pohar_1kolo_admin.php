@@ -74,43 +74,45 @@ function h($value): string { return htmlspecialchars((string)$value, ENT_QUOTES,
   <link rel="stylesheet" href="/liga-app/assets/admin-theme.css?v=<?= (int)@filemtime(dirname(__DIR__).'/assets/admin-theme.css') ?>">
   <script src="/liga-app/assets/admin-theme.js?v=1"></script>
   <style>
-    .draw-list{display:grid;gap:10px}.draw-match{display:grid;grid-template-columns:70px minmax(180px,1fr) auto minmax(180px,1fr) auto;gap:10px;align-items:center;padding:12px;border:1px solid var(--admin-border);border-radius:12px}.draw-match select{width:100%}.draw-vs{text-align:center;font-weight:800}.draw-summary{display:flex;gap:16px;flex-wrap:wrap}.draw-summary strong{font-size:1.15rem}@media(max-width:720px){.draw-match{grid-template-columns:1fr}.draw-vs{text-align:left}.draw-match .admin-btn{width:100%}}
+    .draw-list{display:grid;gap:10px}.draw-match{display:grid;grid-template-columns:70px minmax(180px,1fr) auto minmax(180px,1fr);gap:10px;align-items:center;padding:12px;border:1px solid var(--admin-border);border-radius:12px}.draw-match select{width:100%}.draw-vs{text-align:center;font-weight:800}.draw-summary{display:flex;gap:16px;flex-wrap:wrap}.draw-summary strong{font-size:1.15rem}.draw-save-bar{position:sticky;bottom:10px;z-index:10;display:flex;justify-content:flex-end;margin-top:14px;padding:12px;border:1px solid var(--admin-border);border-radius:12px;background:var(--admin-surface)}@media(max-width:720px){.draw-match{grid-template-columns:1fr}.draw-vs{text-align:left}.draw-save-bar .admin-btn{width:100%}}
   </style>
 </head>
 <body class="admin-body"><main class="admin-shell">
   <div class="admin-top"><a href="/liga-app/admin/pohar.php?rocnik_id=<?= (int)$turnaj['rocnik_id'] ?>">← Správa poháru</a><a href="/liga-app/pohar/pohar_turnaj.php?id=<?= $turnajId ?>">Náhled pavouka</a></div>
   <h1 class="admin-title">Ruční los prvního kola</h1>
   <p class="admin-subtitle"><?= h($turnaj['nazev']) ?> · dvojice vyplňte přesně podle fyzického losování.</p>
-  <?php if (($_GET['saved'] ?? '') === '1'): ?><div class="admin-alert admin-alert--success">Dvojice byla uložena.</div><?php endif; ?>
+  <?php if (($_GET['saved'] ?? '') === '1'): ?><div class="admin-alert admin-alert--success">Celý los prvního kola byl uložen.</div><?php endif; ?>
+  <?php if (!empty($_GET['error'])): ?><div class="admin-alert admin-alert--danger"><?= h($_GET['error']) ?></div><?php endif; ?>
   <section class="admin-card" style="margin-bottom:14px">
-    <div class="draw-summary"><span>Účastníků: <strong><?= count($players) ?></strong></span><span>Zařazeno do losu: <strong><?= count($usedPlayers) ?></strong></span><span>Zápasů 1. kola: <strong><?= count($matches) ?></strong></span></div>
-    <p class="admin-help">U volného losu vyberte hráče pouze na jedné straně. Stejného hráče nelze uložit do více dvojic.</p>
+    <div class="draw-summary"><span>Účastníků: <strong><?= count($players) ?></strong></span><span>Zařazeno do losu: <strong id="used-player-count"><?= count($usedPlayers) ?></strong></span><span>Zápasů 1. kola: <strong><?= count($matches) ?></strong></span></div>
+    <p class="admin-help">Navolte nejprve všechny dvojice. U volného losu vyberte hráče pouze na jedné straně. Nakonec se celý los uloží jediným tlačítkem.</p>
   </section>
 
   <?php if (!$players): ?>
     <div class="admin-alert admin-alert--danger">Nejdřív se vraťte do správy poháru a vyberte účastníky.</div>
   <?php endif; ?>
 
+  <form method="post" action="/liga-app/pohar/uloz_obsazeni.php" id="draw-form">
+  <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
+  <input type="hidden" name="turnaj_id" value="<?= $turnajId ?>">
   <div class="draw-list">
     <?php foreach ($matches as $match): ?>
-      <form method="post" action="/liga-app/pohar/uloz_obsazeni.php" class="draw-match">
+      <div class="draw-match">
         <strong>Zápas <?= (int)$match['poradi'] ?></strong>
-        <select name="hrac1_id" aria-label="První hráč zápasu <?= (int)$match['poradi'] ?>">
+        <select name="obsazeni[<?= (int)$match['id'] ?>][hrac1_id]" aria-label="První hráč zápasu <?= (int)$match['poradi'] ?>">
           <option value="">— volný los —</option>
           <?php foreach ($players as $playerId => $playerName): ?><option value="<?= $playerId ?>" <?= (int)$match['hrac1_id']===$playerId?'selected':'' ?>><?= h($playerName) ?></option><?php endforeach; ?>
         </select>
         <span class="draw-vs">vs.</span>
-        <select name="hrac2_id" aria-label="Druhý hráč zápasu <?= (int)$match['poradi'] ?>">
+        <select name="obsazeni[<?= (int)$match['id'] ?>][hrac2_id]" aria-label="Druhý hráč zápasu <?= (int)$match['poradi'] ?>">
           <option value="">— volný los —</option>
           <?php foreach ($players as $playerId => $playerName): ?><option value="<?= $playerId ?>" <?= (int)$match['hrac2_id']===$playerId?'selected':'' ?>><?= h($playerName) ?></option><?php endforeach; ?>
         </select>
-        <input type="hidden" name="csrf" value="<?= h($csrf) ?>">
-        <input type="hidden" name="zapas_id" value="<?= (int)$match['id'] ?>">
-        <input type="hidden" name="turnaj_id" value="<?= $turnajId ?>">
-        <button class="admin-btn admin-btn--secondary" type="submit">Uložit</button>
-      </form>
+      </div>
     <?php endforeach; ?>
   </div>
+  <div class="draw-save-bar"><button class="admin-btn" type="submit" <?= !$players?'disabled':'' ?>>Uložit celý los</button></div>
+  </form>
 
   <section class="admin-card admin-danger-zone" style="margin-top:14px">
     <h2>Dokončit ruční los</h2>
@@ -122,4 +124,28 @@ function h($value): string { return htmlspecialchars((string)$value, ENT_QUOTES,
       <button class="admin-btn" type="submit" <?= !$players?'disabled':'' ?>>Dokončit ruční los a spustit</button>
     </form>
   </section>
-</main></body></html>
+</main>
+<script>
+(() => {
+  const form = document.getElementById('draw-form');
+  if (!form) return;
+  const selects = [...form.querySelectorAll('select')];
+  const counter = document.getElementById('used-player-count');
+
+  function refreshSelections() {
+    const selected = new Set(selects.map(select => select.value).filter(Boolean));
+    if (counter) counter.textContent = selected.size;
+    selects.forEach(select => {
+      const current = select.value;
+      [...select.options].forEach(option => {
+        if (!option.value) return;
+        option.disabled = option.value !== current && selected.has(option.value);
+      });
+    });
+  }
+
+  selects.forEach(select => select.addEventListener('change', refreshSelections));
+  refreshSelections();
+})();
+</script>
+</body></html>
