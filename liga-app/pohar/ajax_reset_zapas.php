@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../security/csrf.php';
+header('Content-Type: application/json; charset=utf-8');
 
 if (!in_array($_SESSION['role'] ?? '', ['admin','stat_editor'], true)) {
     http_response_code(403);
@@ -24,9 +25,10 @@ $conn->begin_transaction();
 try {
     // načti zápas
     $stmt = $conn->prepare("
-        SELECT vitez_id, next_match_id, next_slot
-        FROM turnaj_zapasy
-        WHERE id = ?
+        SELECT z.vitez_id, z.next_match_id, z.next_slot, t.stav
+        FROM turnaj_zapasy z
+        JOIN turnaje t ON t.id=z.turnaj_id
+        WHERE z.id = ?
         FOR UPDATE
     ");
     $stmt->bind_param("i", $zapas_id);
@@ -37,18 +39,23 @@ try {
         throw new Exception('Zápas nenalezen');
     }
 
+    if (($z['stav'] ?? '') !== 'probiha') {
+        throw new Exception('Výsledek lze zrušit pouze u spuštěného turnaje.');
+    }
+
     // pokud už existuje navazující zápas s výsledkem → zákaz
     if ($z['next_match_id']) {
         $stmt = $conn->prepare("
-            SELECT vitez_id
+            SELECT skore1, skore2, vitez_id
             FROM turnaj_zapasy
             WHERE id = ?
+            FOR UPDATE
         ");
         $stmt->bind_param("i", $z['next_match_id']);
         $stmt->execute();
         $nav = $stmt->get_result()->fetch_assoc();
 
-        if ($nav && $nav['vitez_id'] !== null) {
+        if ($nav && ($nav['skore1'] !== null || $nav['skore2'] !== null || $nav['vitez_id'] !== null)) {
             throw new Exception('Nelze zrušit – navazující zápas už je odehrán');
         }
     }
@@ -60,18 +67,16 @@ try {
         $stmt = $conn->prepare("
             UPDATE turnaj_zapasy
             SET {$slotCol} = NULL
-            WHERE id = ?
+            WHERE id = ? AND {$slotCol} = ?
         ");
-        $stmt->bind_param("i", $z['next_match_id']);
+        $stmt->bind_param("ii", $z['next_match_id'], $z['vitez_id']);
         $stmt->execute();
     }
 
-    // reset zápasu
+    // Zruší se pouze výsledek; obsazení zápasu musí zůstat zachované.
     $stmt = $conn->prepare("
         UPDATE turnaj_zapasy
         SET
-            hrac1_id = NULL,
-            hrac2_id = NULL,
             skore1 = NULL,
             skore2 = NULL,
             vitez_id = NULL

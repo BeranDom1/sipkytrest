@@ -110,7 +110,7 @@ document.addEventListener('click', async e => {
   const btn = e.target.closest('.btn-reset-zapas');
   if (!btn) return;
 
-  if (!confirm('Opravdu chceš zrušit celý zápas?')) return;
+  if (!confirm('Opravdu chcete zrušit uložený výsledek? Dvojice hráčů zůstane zachována.')) return;
 
   const zapasId = btn.dataset.zapasId;
 

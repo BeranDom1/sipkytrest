@@ -20,12 +20,12 @@ function zobrazHraceNeboPlaceholder(
     string $slot,
     array $placeholderMap
 ): string {
-    if ($z[$slot] === 0) {
+    if ($z[$slot] !== null && (int)$z[$slot] === 0) {
         return 'Volný los';
     }
 
     if (!empty($z[$slot])) {
-        return htmlspecialchars(getJmenoHraca($conn, (int)$z[$slot]));
+        return getJmenoHraca($conn, (int)$z[$slot]);
     }
 
     $short = $slot === 'hrac1_id' ? 'hrac1' : 'hrac2';
@@ -76,6 +76,7 @@ $stmt->execute();
 $pocetZapasu = (int)$stmt->get_result()->fetch_row()[0];
 
 $canEditPlayers = false;
+$canEditScores = $isEditor && ($turnaj['stav'] ?? '') === 'probiha';
 
 /* ===== HRÁČI PRO SELECT (1. KOLO) ===== */
 $hraciSelect = [];
@@ -201,24 +202,13 @@ $nazevKola = $nazvyKol[$kolo] ?? ($kolo . '. kolo');
     <?php foreach ($zapasy as $z): ?>
 
         <?php
-        $jeUlozeno = (
-    $z['skore1'] !== null &&
-    $z['skore2'] !== null &&
-    $z['vitez_id'] !== null
-);
+        $jeUlozeno = $z['vitez_id'] !== null;
         $oznaceniZapasu = oznaceniZapasu((int)$kolo, (int)$z['poradi']);
   $jmeno1 = zobrazHraceNeboPlaceholder($conn, $z, 'hrac1_id', $placeholderMap);
 $jmeno2 = zobrazHraceNeboPlaceholder($conn, $z, 'hrac2_id', $placeholderMap);
-            $winner1 = false;
-$winner2 = false;
-
-if ($z['skore1'] !== null && $z['skore2'] !== null) {
-    if ((int)$z['skore1'] > (int)$z['skore2']) {
-        $winner1 = true;
-    } elseif ((int)$z['skore2'] > (int)$z['skore1']) {
-        $winner2 = true;
-    }
-}
+        $winnerId = $z['vitez_id'] === null ? null : (int)$z['vitez_id'];
+        $winner1 = $winnerId !== null && (int)$z['hrac1_id'] === $winnerId;
+        $winner2 = $winnerId !== null && (int)$z['hrac2_id'] === $winnerId;
         ?>
 
         <div class="zapas <?= ($isEditor && $jeUlozeno) ? 'zapas-ulozen' : '' ?>">
@@ -233,7 +223,8 @@ if ($z['skore1'] !== null && $z['skore2'] !== null) {
 
     <?php if (
         $z['vitez_id'] &&
-        ($z['hrac1_id'] === 0 || $z['hrac2_id'] === 0)
+        (($z['hrac1_id'] !== null && (int)$z['hrac1_id'] === 0)
+          || ($z['hrac2_id'] !== null && (int)$z['hrac2_id'] === 0))
     ): ?>
         <span class="bye-label">Volný los</span>
 
@@ -280,14 +271,14 @@ if ($z['skore1'] !== null && $z['skore2'] !== null) {
 
     <!-- SKÓRE -->
     <div class="skore">
-        <?php if ($isEditor && $z['hrac1_id'] && $z['hrac2_id']): ?>
+        <?php if ($canEditScores && $z['hrac1_id'] && $z['hrac2_id']): ?>
             <input type="number" min="0" max="<?= vitezneLegyProKolo($turnaj['legy_json'] ?? null, (int)$kolo) ?>" class="score-input"
-                   value="<?= (int)$z['skore1'] ?>"
+                   value="<?= $z['skore1'] !== null ? (int)$z['skore1'] : '' ?>"
                    data-zapas-id="<?= (int)$z['id'] ?>"
                    data-slot="skore1">
             <span>:</span>
             <input type="number" min="0" max="<?= vitezneLegyProKolo($turnaj['legy_json'] ?? null, (int)$kolo) ?>" class="score-input"
-                   value="<?= (int)$z['skore2'] ?>"
+                   value="<?= $z['skore2'] !== null ? (int)$z['skore2'] : '' ?>"
                    data-zapas-id="<?= (int)$z['id'] ?>"
                    data-slot="skore2">
         <?php else: ?>
@@ -324,14 +315,16 @@ if ($z['skore1'] !== null && $z['skore2'] !== null) {
         <?php endif; ?>
     </div>
 
-            <?php if ($isEditor && $z['hrac1_id'] && $z['hrac2_id']): ?>
+            <?php if ($canEditScores && $z['hrac1_id'] && $z['hrac2_id']): ?>
                 <div class="actions">
     <button class="btn-save-score" data-zapas-id="<?= (int)$z['id'] ?>">
         💾 Uložit
     </button>
-    <button class="btn-reset-zapas" data-zapas-id="<?= (int)$z['id'] ?>">
-        ❌ Zrušit
-    </button>
+    <?php if ($jeUlozeno): ?>
+        <button class="btn-reset-zapas" data-zapas-id="<?= (int)$z['id'] ?>">
+            ❌ Zrušit výsledek
+        </button>
+    <?php endif; ?>
 </div>
 
             <?php endif; ?>

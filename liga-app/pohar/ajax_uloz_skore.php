@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../security/csrf.php';
+header('Content-Type: application/json; charset=utf-8');
 
 if (!isset($_SESSION['role']) || !in_array($_SESSION['role'], ['admin', 'stat_editor'], true)) {
     http_response_code(403);

@@ -68,9 +68,14 @@ foreach ([$h1, $h2] as $playerId) {
     if ($duplicate) exit('Hráč už je v jiné dvojici prvního kola.');
 }
 
-/* uložení */
-$h1Value = $h1 > 0 ? $h1 : null;
-$h2Value = $h2 > 0 ? $h2 : null;
+/*
+ * NULL znamená dosud nevyplněnou pozici, 0 znamená výslovný volný los.
+ * Pokud je vybrán právě jeden hráč, prázdnou stranu proto uložíme jako 0.
+ * U úplně prázdného zápasu ponecháme obě strany NULL.
+ */
+$hasExactlyOnePlayer = ($h1 > 0) xor ($h2 > 0);
+$h1Value = $h1 > 0 ? $h1 : ($hasExactlyOnePlayer ? 0 : null);
+$h2Value = $h2 > 0 ? $h2 : ($hasExactlyOnePlayer ? 0 : null);
 $stmt = $conn->prepare("
     UPDATE turnaj_zapasy
     SET hrac1_id = ?, hrac2_id = ?

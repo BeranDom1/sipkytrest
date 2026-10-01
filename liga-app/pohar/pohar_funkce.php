@@ -146,7 +146,7 @@ function ulozSkoreAZpropagujViteze(mysqli $conn, int $zapas_id, int $s1, int $s2
         // zamkni zápas
         $stmt = $conn->prepare("
             SELECT z.id, z.kolo, z.hrac1_id, z.hrac2_id, z.vitez_id,
-                   z.next_match_id, z.next_slot, t.legy_json
+                   z.next_match_id, z.next_slot, t.legy_json, t.stav
             FROM turnaj_zapasy z
             JOIN turnaje t ON t.id = z.turnaj_id
             WHERE z.id = ?
@@ -159,61 +159,65 @@ function ulozSkoreAZpropagujViteze(mysqli $conn, int $zapas_id, int $s1, int $s2
         if (!$z) {
             throw new Exception('Zápas nenalezen');
         }
-// === AUTOMATICKÝ BYE ===
-if (
-    ($z['hrac1_id'] > 0 && $z['hrac2_id'] === 0) ||
-    ($z['hrac2_id'] > 0 && $z['hrac1_id'] === 0)
-) {
-    $vitez_id = $z['hrac1_id'] > 0 ? $z['hrac1_id'] : $z['hrac2_id'];
 
-    // uložit jako BYE
-    $stmt = $conn->prepare("
-        UPDATE turnaj_zapasy
-        SET vitez_id = ?, skore1 = NULL, skore2 = NULL
-        WHERE id = ?
-    ");
-    $stmt->bind_param("ii", $vitez_id, $zapas_id);
-    $stmt->execute();
+        if (($z['stav'] ?? '') !== 'probiha') {
+            throw new Exception('Výsledky lze zadávat pouze u spuštěného turnaje.');
+        }
 
-    // propis do dalšího kola
-    if ($z['next_match_id'] && $z['next_slot']) {
-        $slotCol = $z['next_slot'] === 'hrac1' ? 'hrac1_id' : 'hrac2_id';
+        $h1 = $z['hrac1_id'] === null ? null : (int)$z['hrac1_id'];
+        $h2 = $z['hrac2_id'] === null ? null : (int)$z['hrac2_id'];
 
-        $stmt = $conn->prepare("
-            UPDATE turnaj_zapasy
-            SET {$slotCol} = ?
-            WHERE id = ?
-        ");
-        $stmt->bind_param("ii", $vitez_id, $z['next_match_id']);
-        $stmt->execute();
-    }
-
-    $conn->commit();
-    return;
-}
+        if (($h1 > 0 && $h2 === 0) || ($h2 > 0 && $h1 === 0)) {
+            throw new Exception('Hráč s volným losem už postupuje automaticky.');
+        }
 
         // validace skóre
         $vitezneLegy = vitezneLegyProKolo($z['legy_json'] ?? null, (int)$z['kolo']);
         validujSkorePodleKola((int)$z['kolo'], $s1, $s2, $vitezneLegy);
 
         // určení vítěze
-        if ($z['hrac1_id'] && $z['hrac2_id']) {
-            $vitez_id = ($s1 > $s2) ? $z['hrac1_id'] : $z['hrac2_id'];
+        if ($h1 > 0 && $h2 > 0) {
+            $vitez_id = ($s1 > $s2) ? $h1 : $h2;
         } else {
             throw new Exception('Zápas nemá oba hráče');
         }
 
-        // 🔁 pokud už byl starý vítěz → ODSTRANIT ho z dalšího kola
-        if ($z['vitez_id'] && $z['next_match_id'] && $z['next_slot']) {
-            $slotCol = $z['next_slot'] === 'hrac1' ? 'hrac1_id' : 'hrac2_id';
+        $oldWinner = $z['vitez_id'] === null ? null : (int)$z['vitez_id'];
 
+        // Navazující zápas zamkneme dřív, než v něm vítěze vyměníme.
+        if ($z['next_match_id'] && $z['next_slot']) {
+            $slotCol = $z['next_slot'] === 'hrac1' ? 'hrac1_id' : 'hrac2_id';
             $stmt = $conn->prepare("
-                UPDATE turnaj_zapasy
-                SET {$slotCol} = NULL
+                SELECT {$slotCol} AS postupujici, skore1, skore2, vitez_id
+                FROM turnaj_zapasy
                 WHERE id = ?
+                FOR UPDATE
             ");
             $stmt->bind_param("i", $z['next_match_id']);
             $stmt->execute();
+            $nextMatch = $stmt->get_result()->fetch_assoc();
+
+            if (!$nextMatch) {
+                throw new Exception('Navazující zápas nebyl nalezen.');
+            }
+
+            $nextHasResult = $nextMatch['skore1'] !== null
+                || $nextMatch['skore2'] !== null
+                || $nextMatch['vitez_id'] !== null;
+            if ($nextHasResult && $oldWinner !== $vitez_id) {
+                throw new Exception('Vítěze už nelze změnit – jeho další zápas je odehraný.');
+            }
+
+            $currentAdvancedPlayer = $nextMatch['postupujici'] === null
+                ? null
+                : (int)$nextMatch['postupujici'];
+            if (
+                $currentAdvancedPlayer !== null
+                && $currentAdvancedPlayer !== $oldWinner
+                && $currentAdvancedPlayer !== $vitez_id
+            ) {
+                throw new Exception('Navazující pozice už obsahuje jiného hráče.');
+            }
         }
 
         // ulož nový výsledek
@@ -225,7 +229,7 @@ if (
         $stmt->bind_param("iiii", $s1, $s2, $vitez_id, $zapas_id);
         $stmt->execute();
 
-        // propaguj nového vítěze
+        // Propaguj uloženého vítěze do přesně určené pozice dalšího kola.
         if ($z['next_match_id'] && $z['next_slot']) {
             $slotCol = $z['next_slot'] === 'hrac1'
                 ? 'hrac1_id'

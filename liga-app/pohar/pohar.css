@@ -118,6 +118,10 @@
   font-size: 0.9em;
 }
 
+html[data-theme="dark"] .jmeno.winner {
+  color: #22c55e;
+}
+
 /* ===== AKCE ===== */
 .actions {
   grid-column: 1 / -1;

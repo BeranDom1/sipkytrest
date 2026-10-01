@@ -197,6 +197,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new RuntimeException('Počet účastníků nesmí být vyšší než velikost pavouka.');
             }
 
+            $usedSeeds = [];
+            foreach ($selected as $playerId) {
+                $seed = max(0, (int)($_POST['nasazeni'][$playerId] ?? 0));
+                if ($seed === 0) continue;
+                if (isset($usedSeeds[$seed])) {
+                    throw new RuntimeException('Pořadí nasazení musí být jedinečné. Hodnota '.$seed.' je zadaná vícekrát.');
+                }
+                $usedSeeds[$seed] = true;
+            }
+
             $conn->begin_transaction();
             $delete = $conn->prepare('DELETE FROM turnaj_hraci WHERE turnaj_id=?');
             $delete->bind_param('i', $turnajId);
@@ -306,6 +316,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $reset->bind_param('i', $turnajId);
             $reset->execute();
             $reset->close();
+            $normalizeByes = $conn->prepare(
+                'UPDATE turnaj_zapasy
+                 SET hrac1_id=CASE WHEN hrac1_id IS NULL AND hrac2_id>0 THEN 0 ELSE hrac1_id END,
+                     hrac2_id=CASE WHEN hrac2_id IS NULL AND hrac1_id>0 THEN 0 ELSE hrac2_id END
+                 WHERE turnaj_id=? AND kolo=1'
+            );
+            $normalizeByes->bind_param('i', $turnajId);
+            $normalizeByes->execute();
+            $normalizeByes->close();
             $setWinner = $conn->prepare('UPDATE turnaj_zapasy SET vitez_id=? WHERE id=?');
             foreach ($firstRound as $match) {
                 $home = (int)($match['hrac1_id'] ?? 0);
@@ -433,6 +452,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($action === 'finish') {
+            $finalStmt = $conn->prepare(
+                'SELECT vitez_id FROM turnaj_zapasy
+                 WHERE turnaj_id=? ORDER BY kolo DESC, poradi ASC LIMIT 1'
+            );
+            $finalStmt->bind_param('i', $turnajId);
+            $finalStmt->execute();
+            $finalMatch = $finalStmt->get_result()->fetch_assoc();
+            $finalStmt->close();
+            if (!$finalMatch || empty($finalMatch['vitez_id'])) {
+                throw new RuntimeException('Turnaj lze ukončit až po uložení výsledku finále.');
+            }
             $stmt = $conn->prepare("UPDATE turnaje SET stav='ukonceno' WHERE id=?");
             $stmt->bind_param('i', $turnajId);
             $stmt->execute();
@@ -522,7 +552,7 @@ $csrf = csrf_token();
 <h3>Termíny zobrazené v hlavičce</h3><div class="pohar-terms"><?php for ($i=0;$i<6;$i++): ?><div class="pohar-term"><div class="admin-field"><input aria-label="Označení termínu" name="termin_label[<?= $i ?>]" placeholder="TOP 64" value="<?= h($terminy[$i]['label'] ?? '') ?>"></div><div class="admin-field"><input aria-label="Text termínu" name="termin_text[<?= $i ?>]" placeholder="odehrát do 1. 3. 2027" value="<?= h($terminy[$i]['text'] ?? '') ?>"></div></div><?php endfor; ?></div>
 <button class="admin-btn" type="submit">Uložit text a pravidla</button></form></section>
 
-<section class="admin-card" style="margin-bottom:14px"><h2>Účastníci (<?= count($participantMap) ?>)</h2><p class="admin-help">Nabídka obsahuje celou databázi hráčů; hráči aktuální sezony jsou označeni. Pro fyzický los stačí zaškrtnout účastníky, jejich dvojice se doplní až v prázdném pavouku.</p><?php if (!$manualDraft): ?><p class="admin-alert">Při automatickém losu je pro současné nastavení potřeba označit <strong><?= max(0, (int)$turnaj['velikost_pavouka'] - count($participantMap)) ?></strong> volných losů.</p><?php endif; ?><div class="admin-field"><label for="player-filter">Hledat hráče</label><input id="player-filter" type="search" placeholder="Začněte psát jméno"></div><form method="post" id="players-form"><input type="hidden" name="csrf" value="<?= h($csrf) ?>"><input type="hidden" name="action" value="save_players"><input type="hidden" name="rocnik_id" value="<?= $seasonId ?>"><div id="players-list"><?php foreach ($allPlayers as $player): $pid=(int)$player['libovolne_id']; $participant=$participantMap[$pid]??null; ?><label class="pohar-player" data-player="<?= h(mb_strtolower($player['jmeno'])) ?>"><input type="checkbox" name="hraci[]" value="<?= $pid ?>" <?= $participant!==null?'checked':'' ?> <?= !$participantsEditable?'disabled':'' ?>><span><?= h($player['jmeno']) ?><?= !empty($player['v_sezone']) ? ' · tato sezona' : '' ?></span><input type="number" name="nasazeni[<?= $pid ?>]" min="1" max="64" placeholder="Pořadí" value="<?= h($participant['nasazeni'] ?? '') ?>" <?= !$participantsEditable?'disabled':'' ?>><span class="pohar-bye"><input type="checkbox" name="volny_los[<?= $pid ?>]" value="1" <?= !empty($participant['volny_los'])?'checked':'' ?> <?= !$participantsEditable?'disabled':'' ?>> Volný los</span></label><?php endforeach; ?></div><?php if ($participantsEditable): ?><button class="admin-btn" style="margin-top:14px" type="submit">Uložit seznam účastníků</button><?php endif; ?></form></section>
+<section class="admin-card" style="margin-bottom:14px"><h2>Účastníci (<?= count($participantMap) ?>)</h2><?php if ($manualDraft): ?><p class="admin-help">Vyberte účastníky a seznam uložte. Hráče i volné losy potom přiřaďte tlačítkem „Doplnit dvojice 1. kola“.</p><?php else: ?><p class="admin-help">Nabídka obsahuje celou databázi hráčů; hráči aktuální sezony jsou označeni. Pořadí a volný los se použijí při automatickém losování.</p><p class="admin-alert">Při automatickém losu je pro současné nastavení potřeba označit <strong><?= max(0, (int)$turnaj['velikost_pavouka'] - count($participantMap)) ?></strong> volných losů.</p><?php endif; ?><div class="admin-field"><label for="player-filter">Hledat hráče</label><input id="player-filter" type="search" placeholder="Začněte psát jméno"></div><form method="post" id="players-form"><input type="hidden" name="csrf" value="<?= h($csrf) ?>"><input type="hidden" name="action" value="save_players"><input type="hidden" name="rocnik_id" value="<?= $seasonId ?>"><div id="players-list"><?php foreach ($allPlayers as $player): $pid=(int)$player['libovolne_id']; $participant=$participantMap[$pid]??null; ?><label class="pohar-player" data-player="<?= h(mb_strtolower($player['jmeno'])) ?>"><input type="checkbox" name="hraci[]" value="<?= $pid ?>" <?= $participant!==null?'checked':'' ?> <?= !$participantsEditable?'disabled':'' ?>><span><?= h($player['jmeno']) ?><?= !empty($player['v_sezone']) ? ' · tato sezona' : '' ?></span><?php if (!$manualDraft): ?><input type="number" name="nasazeni[<?= $pid ?>]" min="1" max="64" placeholder="Pořadí" value="<?= h($participant['nasazeni'] ?? '') ?>" <?= !$participantsEditable?'disabled':'' ?>><span class="pohar-bye"><input type="checkbox" name="volny_los[<?= $pid ?>]" value="1" <?= !empty($participant['volny_los'])?'checked':'' ?> <?= !$participantsEditable?'disabled':'' ?>> Volný los</span><?php else: ?><span class="admin-help">Přiřadí se v 1. kole</span><?php endif; ?></label><?php endforeach; ?></div><?php if ($participantsEditable): ?><button class="admin-btn" style="margin-top:14px" type="submit">Uložit seznam účastníků</button><?php endif; ?></form></section>
 
 <?php if (!$hasBracket): ?>
 <section class="admin-card admin-danger-zone">
@@ -546,4 +576,4 @@ $csrf = csrf_token();
 <section class="admin-card"><div class="admin-actions"><a class="admin-btn" href="/liga-app/pohar/pohar_turnaj.php?id=<?= (int)$turnaj['id'] ?>">Zobrazit turnaj</a><?php if (($turnaj['stav']??'')!=='ukonceno'): ?><form method="post"><input type="hidden" name="csrf" value="<?= h($csrf) ?>"><input type="hidden" name="action" value="finish"><input type="hidden" name="rocnik_id" value="<?= $seasonId ?>"><button class="admin-btn admin-btn--secondary" type="submit">Označit jako ukončený</button></form><?php endif; ?></div></section>
 <?php endif; ?>
 <?php endif; ?>
-</main><script>const filter=document.getElementById('player-filter');filter?.addEventListener('input',()=>{const value=filter.value.toLocaleLowerCase('cs');document.querySelectorAll('[data-player]').forEach(row=>row.hidden=!row.dataset.player.includes(value));});</script></body></html>
+</main><script>const filter=document.getElementById('player-filter');filter?.addEventListener('input',()=>{const value=filter.value.toLocaleLowerCase('cs');document.querySelectorAll('[data-player]').forEach(row=>row.hidden=!row.dataset.player.includes(value));});document.getElementById('players-form')?.addEventListener('change',event=>{if(!event.target.matches('input[name^="volny_los"]')||!event.target.checked)return;const participant=event.target.closest('.pohar-player')?.querySelector('input[name="hraci[]"]');if(participant)participant.checked=true;});</script></body></html>
