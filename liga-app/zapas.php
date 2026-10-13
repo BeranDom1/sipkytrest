@@ -477,7 +477,7 @@ $hasStoredResult = !$isNew && ($z['skore1'] !== null || $z['skore2'] !== null);
     width: 14ch !important;                  /* klidně 10–14ch podle potřeby */
     max-width: 40%;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    font-size: .82rem !important; color:#111 !important;
+    font-size: .82rem !important; color:inherit !important;
   }
 
   /* 4) číselné sloupce – přesně na obsah (žádné rezervy) */
