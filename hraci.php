@@ -1,4 +1,7 @@
 <?php
+header('Location: /', true, 301);
+exit;
+
 require __DIR__ . "/liga-app/db.php";
 
 $hraci = [];
