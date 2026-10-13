@@ -1357,7 +1357,7 @@ html[data-theme=dark] .table tbody tr{background:var(--nk-surface);color:var(--n
 html[data-theme=dark] .league-row,html[data-theme=dark] .progress{background:#1a282e}
 html[data-theme=dark] .badge{background:#203b41;color:#8ed8df}
 html[data-theme=dark] .nk-footer{background:#101a1f;border-color:var(--nk-border);color:var(--nk-muted)}
-html[data-theme=dark] .match-table td{border-color:var(--nk-border)}
+html[data-theme=dark] .match-table td{border-color:var(--nk-border);color:var(--nk-text)}
 html[data-theme=dark] .match-table td:nth-child(3){color:var(--nk-muted)}
 html[data-theme=dark] #installBtn{background:#1b292f!important;color:var(--nk-text)!important;border-color:var(--nk-border)!important}
 
