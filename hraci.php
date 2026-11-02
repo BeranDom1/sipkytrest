@@ -54,7 +54,7 @@ if ($result) {
             <li><a href="hraci.php" aria-current="page">Hráči</a></li>
             <li><a href="https://sipkytrest.cz/liga-app" target="_blank" rel="noopener noreferrer">Ligová aplikace</a></li>
             <li><a href="/liga-app/rezervace.php">Rezervace terčů</a></li>
-            <li><a href="https://www.stedar.org/alms/league/league.view" target="_blank" rel="noopener noreferrer">Liga Vysočina</a></li>
+            <li><a href="https://liga.czechdarts.org/tabulka/93b516f5-e479-4db8-9d10-dc2d1805b799/" target="_blank" rel="noopener noreferrer">Liga Vysočina</a></li>
             <li>
                 <a href="https://www.facebook.com/groups/1075319810414488"
                    class="main-nav__facebook" target="_blank" rel="noopener noreferrer"
