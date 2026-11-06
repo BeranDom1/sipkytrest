@@ -161,6 +161,7 @@ function liga_label(int $ligaId, int $cislo, string $nazev): string
           <th data-key="prumer"  data-type="num">Průměr</th>
           <th data-key="hi"      data-type="num">Nejvyšší zavření</th>
           <th data-key="body"    data-type="num">Hodobody</th>
+          <th data-key="body_avg" data-type="num" title="Průměr hodobodů na jeden odehraný zápas">Ø Hodobody</th>
         </tr>
       </thead>
       <tbody>
@@ -173,6 +174,13 @@ function liga_label(int $ligaId, int $cislo, string $nazev): string
             <td style="text-align:center"><?= is_null($r['prumer']) ? '—' : number_format((float)$r['prumer'], 2, ',', ' ') ?></td>
             <td style="text-align:center"><?= is_null($r['nejvyssi_zavreni']) ? '—' : (int)$r['nejvyssi_zavreni'] ?></td>
             <td style="text-align:center"><?= is_null($r['hodobody']) ? '—' : (int)$r['hodobody'] ?></td>
+            <?php
+              $zapasy = (int)($r['zapasy'] ?? 0);
+              $hodobodyNaZapas = $zapasy > 0 && !is_null($r['hodobody'])
+                ? (float)$r['hodobody'] / $zapasy
+                : null;
+            ?>
+            <td style="text-align:center"><?= is_null($hodobodyNaZapas) ? '—' : number_format($hodobodyNaZapas, 2, ',', ' ') ?></td>
           </tr>
         <?php endforeach; ?>
       </tbody>

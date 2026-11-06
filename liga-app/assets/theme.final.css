@@ -498,10 +498,10 @@ h3{font-size:clamp(18px,2.2vw,22px);margin:16px 0 8px}
     white-space: nowrap;
   }
 
-  /* Jméno – vezme zbytek šířky, neláme po písmenkách */
+  /* Jméno – zúžené kvůli průměru hodobodů, neláme po písmenkách */
   .table--sortable th:nth-child(2),
   .table--sortable td:nth-child(2){
-    width: 11ch !important;
+    width: 9ch !important;
     text-align: left;
     white-space: normal;
     word-break: break-word;   /* lámat jen dlouhá slova */
@@ -558,12 +558,22 @@ h3{font-size:clamp(18px,2.2vw,22px);margin:16px 0 8px}
     font-variant-numeric: tabular-nums;
   }
 
-  /* Krátké hlavičky jen pro 3–7 (Jméno necháme beze změny) */
+  /* Ø HB – průměr hodobodů na zápas */
+  .table--sortable th:nth-child(8),
+  .table--sortable td:nth-child(8){
+    width: 6ch !important;
+    text-align: center;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Krátké hlavičky jen pro 3–8 (Jméno necháme beze změny) */
   .table--sortable thead th:nth-child(3),
   .table--sortable thead th:nth-child(4),
   .table--sortable thead th:nth-child(5),
   .table--sortable thead th:nth-child(6),
-  .table--sortable thead th:nth-child(7){
+  .table--sortable thead th:nth-child(7),
+  .table--sortable thead th:nth-child(8){
     font-size: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .table--sortable thead th:nth-child(3)::before{ content: "L";   font-size: 9px; }
@@ -571,6 +581,7 @@ h3{font-size:clamp(18px,2.2vw,22px);margin:16px 0 8px}
   .table--sortable thead th:nth-child(5)::before{ content: "Ø";   font-size: 9px; }
   .table--sortable thead th:nth-child(6)::before{ content: "Max"; font-size: 8px; }
   .table--sortable thead th:nth-child(7)::before{ content: "HB";  font-size: 8px; }
+  .table--sortable thead th:nth-child(8)::before{ content: "Ø HB"; font-size: 8px; }
 }
 
 /* iOS pojistka (min-width), kdyby Safari ch nepřesně počítal */
@@ -588,7 +599,7 @@ h3{font-size:clamp(18px,2.2vw,22px);margin:16px 0 8px}
   .table--sortable thead th:nth-child(1)::before{ content: none !important; }
   .table--sortable thead th:nth-child(1){ font-size: inherit !important; }
 }
-/* iPhone Safari fix – Kompletni statistiky: neschovávej sloupce 3–7 */
+/* iPhone Safari fix – Kompletni statistiky: neschovávej sloupce 3–8 */
 @supports (-webkit-overflow-scrolling: touch){
   @media (max-width: 540px){
     /* povol vodorovný posuv */
@@ -597,7 +608,7 @@ h3{font-size:clamp(18px,2.2vw,22px);margin:16px 0 8px}
     /* u kompletních statistik nepoužívej fixed layout na iOS */
     .table-wrap > .table--sortable{
       table-layout: auto !important;
-      min-width: 560px;                 /* vynutí zobrazení všech sloupců -> posuvník */
+      min-width: 630px;                 /* vynutí zobrazení všech sloupců -> posuvník */
     }
 
     /* bez zalamování čísel; jméno může na 2 řádky */
